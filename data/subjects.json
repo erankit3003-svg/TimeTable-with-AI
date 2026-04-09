@@ -54,5 +54,13 @@
     "credits": 3,
     "type": "Theory",
     "requiredSessions": 2
+  },
+  {
+    "id": "SUB008",
+    "name": "Test Subject 081714",
+    "code": "TST0817",
+    "credits": 3,
+    "type": "Theory",
+    "requiredSessions": 2
   }
 ]

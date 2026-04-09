@@ -193,5 +193,21 @@
         "14:00-15:00"
       ]
     }
+  },
+  {
+    "id": "T006",
+    "name": "Test Teacher 081714",
+    "subjects": [
+      "Test Subject"
+    ],
+    "availability": {
+      "Monday": [
+        "09:00-10:00",
+        "10:00-11:00"
+      ],
+      "Tuesday": [
+        "09:00-10:00"
+      ]
+    }
   }
 ]
