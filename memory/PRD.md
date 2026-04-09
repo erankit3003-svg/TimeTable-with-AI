@@ -76,12 +76,9 @@ AI-Based Dynamic Timetable Generation System with Real-Time Constraint Optimizat
 ### P1 (Next)
 - [ ] Adaptive learning from conflict history
 - [ ] Multi-class/section support
-- [ ] Print/PDF timetable export
 
 ### P2 (Future)
 - [ ] Multiple timetable comparison
-- [ ] Print/PDF export
-- [ ] Multi-class/section support
 - [ ] Database integration (MongoDB/PostgreSQL)
 - [ ] User authentication for admin
 - [ ] Real-time collaboration
