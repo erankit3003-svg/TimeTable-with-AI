@@ -128,6 +128,102 @@ app.post('/api/subjects', async (req, res) => {
   }
 });
 
+// PUT - Update teacher
+app.put('/api/teachers/:id', async (req, res) => {
+  try {
+    const teachers = await readJSON(teachersFile);
+    const idx = teachers.findIndex(t => t.id === req.params.id);
+    if (idx === -1) return res.status(404).json({ success: false, error: 'Teacher not found' });
+    const { name, subjects, availability } = req.body;
+    if (name) teachers[idx].name = name;
+    if (subjects) teachers[idx].subjects = subjects;
+    if (availability) teachers[idx].availability = availability;
+    await writeJSON(teachersFile, teachers);
+    res.json({ success: true, data: teachers[idx] });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// DELETE - Delete teacher
+app.delete('/api/teachers/:id', async (req, res) => {
+  try {
+    let teachers = await readJSON(teachersFile);
+    const idx = teachers.findIndex(t => t.id === req.params.id);
+    if (idx === -1) return res.status(404).json({ success: false, error: 'Teacher not found' });
+    const removed = teachers.splice(idx, 1);
+    await writeJSON(teachersFile, teachers);
+    res.json({ success: true, data: removed[0] });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// PUT - Update room
+app.put('/api/rooms/:id', async (req, res) => {
+  try {
+    const rooms = await readJSON(roomsFile);
+    const idx = rooms.findIndex(r => r.id === req.params.id);
+    if (idx === -1) return res.status(404).json({ success: false, error: 'Room not found' });
+    const { name, capacity, type, facilities } = req.body;
+    if (name) rooms[idx].name = name;
+    if (capacity !== undefined) rooms[idx].capacity = capacity;
+    if (type) rooms[idx].type = type;
+    if (facilities) rooms[idx].facilities = facilities;
+    await writeJSON(roomsFile, rooms);
+    res.json({ success: true, data: rooms[idx] });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// DELETE - Delete room
+app.delete('/api/rooms/:id', async (req, res) => {
+  try {
+    let rooms = await readJSON(roomsFile);
+    const idx = rooms.findIndex(r => r.id === req.params.id);
+    if (idx === -1) return res.status(404).json({ success: false, error: 'Room not found' });
+    const removed = rooms.splice(idx, 1);
+    await writeJSON(roomsFile, rooms);
+    res.json({ success: true, data: removed[0] });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// PUT - Update subject
+app.put('/api/subjects/:id', async (req, res) => {
+  try {
+    const subjects = await readJSON(subjectsFile);
+    const idx = subjects.findIndex(s => s.id === req.params.id);
+    if (idx === -1) return res.status(404).json({ success: false, error: 'Subject not found' });
+    const { name, code, credits, type, requiredSessions } = req.body;
+    if (name) subjects[idx].name = name;
+    if (code) subjects[idx].code = code;
+    if (credits !== undefined) subjects[idx].credits = credits;
+    if (type) subjects[idx].type = type;
+    if (requiredSessions !== undefined) subjects[idx].requiredSessions = requiredSessions;
+    await writeJSON(subjectsFile, subjects);
+    res.json({ success: true, data: subjects[idx] });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// DELETE - Delete subject
+app.delete('/api/subjects/:id', async (req, res) => {
+  try {
+    let subjects = await readJSON(subjectsFile);
+    const idx = subjects.findIndex(s => s.id === req.params.id);
+    if (idx === -1) return res.status(404).json({ success: false, error: 'Subject not found' });
+    const removed = subjects.splice(idx, 1);
+    await writeJSON(subjectsFile, subjects);
+    res.json({ success: true, data: removed[0] });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // ========== Timetable Generation (Greedy + Constraint) ==========
 const generateTimetable = (teachers, rooms, subjects) => {
   const timetable = [];

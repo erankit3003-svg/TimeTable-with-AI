@@ -236,6 +236,239 @@ class TimetableAPITester:
             self.log_test("GET Export Timetable", False, str(e))
             return False
 
+    def test_update_teacher(self, teacher_id):
+        """Test PUT /api/teachers/:id endpoint"""
+        try:
+            update_data = {
+                "name": f"Updated Teacher {datetime.now().strftime('%H%M%S')}",
+                "subjects": ["Updated Subject", "Another Subject"],
+                "availability": {
+                    "Monday": ["09:00-10:00", "10:00-11:00", "11:00-12:00"],
+                    "Wednesday": ["14:00-15:00"]
+                }
+            }
+            
+            response = requests.put(f"{self.api_url}/teachers/{teacher_id}", json=update_data, timeout=10)
+            success = response.status_code == 200
+            if success:
+                data = response.json()
+                success = data.get("success") and "data" in data
+                if success:
+                    print(f"   ✏️ Updated teacher: {teacher_id}")
+            
+            self.log_test("PUT Update Teacher", success, f"Status: {response.status_code}")
+            return success
+        except Exception as e:
+            self.log_test("PUT Update Teacher", False, str(e))
+            return False
+
+    def test_update_room(self, room_id):
+        """Test PUT /api/rooms/:id endpoint"""
+        try:
+            update_data = {
+                "name": f"Updated Room {datetime.now().strftime('%H%M%S')}",
+                "capacity": 50,
+                "type": "Lab",
+                "facilities": ["Computers", "Projector", "Air Conditioning"]
+            }
+            
+            response = requests.put(f"{self.api_url}/rooms/{room_id}", json=update_data, timeout=10)
+            success = response.status_code == 200
+            if success:
+                data = response.json()
+                success = data.get("success") and "data" in data
+                if success:
+                    print(f"   ✏️ Updated room: {room_id}")
+            
+            self.log_test("PUT Update Room", success, f"Status: {response.status_code}")
+            return success
+        except Exception as e:
+            self.log_test("PUT Update Room", False, str(e))
+            return False
+
+    def test_update_subject(self, subject_id):
+        """Test PUT /api/subjects/:id endpoint"""
+        try:
+            update_data = {
+                "name": f"Updated Subject {datetime.now().strftime('%H%M%S')}",
+                "code": f"UPD{datetime.now().strftime('%H%M')}",
+                "credits": 4,
+                "type": "Practical",
+                "requiredSessions": 4
+            }
+            
+            response = requests.put(f"{self.api_url}/subjects/{subject_id}", json=update_data, timeout=10)
+            success = response.status_code == 200
+            if success:
+                data = response.json()
+                success = data.get("success") and "data" in data
+                if success:
+                    print(f"   ✏️ Updated subject: {subject_id}")
+            
+            self.log_test("PUT Update Subject", success, f"Status: {response.status_code}")
+            return success
+        except Exception as e:
+            self.log_test("PUT Update Subject", False, str(e))
+            return False
+
+    def test_delete_teacher(self, teacher_id):
+        """Test DELETE /api/teachers/:id endpoint"""
+        try:
+            response = requests.delete(f"{self.api_url}/teachers/{teacher_id}", timeout=10)
+            success = response.status_code == 200
+            if success:
+                data = response.json()
+                success = data.get("success") and "data" in data
+                if success:
+                    print(f"   🗑️ Deleted teacher: {teacher_id}")
+            
+            self.log_test("DELETE Teacher", success, f"Status: {response.status_code}")
+            return success
+        except Exception as e:
+            self.log_test("DELETE Teacher", False, str(e))
+            return False
+
+    def test_delete_room(self, room_id):
+        """Test DELETE /api/rooms/:id endpoint"""
+        try:
+            response = requests.delete(f"{self.api_url}/rooms/{room_id}", timeout=10)
+            success = response.status_code == 200
+            if success:
+                data = response.json()
+                success = data.get("success") and "data" in data
+                if success:
+                    print(f"   🗑️ Deleted room: {room_id}")
+            
+            self.log_test("DELETE Room", success, f"Status: {response.status_code}")
+            return success
+        except Exception as e:
+            self.log_test("DELETE Room", False, str(e))
+            return False
+
+    def test_delete_subject(self, subject_id):
+        """Test DELETE /api/subjects/:id endpoint"""
+        try:
+            response = requests.delete(f"{self.api_url}/subjects/{subject_id}", timeout=10)
+            success = response.status_code == 200
+            if success:
+                data = response.json()
+                success = data.get("success") and "data" in data
+                if success:
+                    print(f"   🗑️ Deleted subject: {subject_id}")
+            
+            self.log_test("DELETE Subject", success, f"Status: {response.status_code}")
+            return success
+        except Exception as e:
+            self.log_test("DELETE Subject", False, str(e))
+            return False
+
+    def test_crud_operations(self):
+        """Test full CRUD cycle for all entities"""
+        print("\n🔄 Testing CRUD Operations")
+        
+        # Create entities for testing
+        teacher_id = None
+        room_id = None
+        subject_id = None
+        
+        # Create teacher
+        try:
+            test_teacher = {
+                "name": f"CRUD Test Teacher {datetime.now().strftime('%H%M%S')}",
+                "subjects": ["CRUD Test Subject"],
+                "availability": {"Monday": ["09:00-10:00"]}
+            }
+            response = requests.post(f"{self.api_url}/teachers", json=test_teacher, timeout=10)
+            if response.status_code == 200:
+                teacher_id = response.json()["data"]["id"]
+                print(f"   📝 Created test teacher: {teacher_id}")
+        except Exception as e:
+            print(f"   ❌ Failed to create test teacher: {e}")
+        
+        # Create room
+        try:
+            test_room = {
+                "name": f"CRUD Test Room {datetime.now().strftime('%H%M%S')}",
+                "capacity": 25,
+                "type": "Classroom"
+            }
+            response = requests.post(f"{self.api_url}/rooms", json=test_room, timeout=10)
+            if response.status_code == 200:
+                room_id = response.json()["data"]["id"]
+                print(f"   📝 Created test room: {room_id}")
+        except Exception as e:
+            print(f"   ❌ Failed to create test room: {e}")
+        
+        # Create subject
+        try:
+            test_subject = {
+                "name": f"CRUD Test Subject {datetime.now().strftime('%H%M%S')}",
+                "code": f"CRD{datetime.now().strftime('%H%M')}",
+                "credits": 3,
+                "type": "Theory"
+            }
+            response = requests.post(f"{self.api_url}/subjects", json=test_subject, timeout=10)
+            if response.status_code == 200:
+                subject_id = response.json()["data"]["id"]
+                print(f"   📝 Created test subject: {subject_id}")
+        except Exception as e:
+            print(f"   ❌ Failed to create test subject: {e}")
+        
+        # Test updates
+        update_results = []
+        if teacher_id:
+            update_results.append(self.test_update_teacher(teacher_id))
+        if room_id:
+            update_results.append(self.test_update_room(room_id))
+        if subject_id:
+            update_results.append(self.test_update_subject(subject_id))
+        
+        # Test deletes
+        delete_results = []
+        if teacher_id:
+            delete_results.append(self.test_delete_teacher(teacher_id))
+        if room_id:
+            delete_results.append(self.test_delete_room(room_id))
+        if subject_id:
+            delete_results.append(self.test_delete_subject(subject_id))
+        
+        # Test 404 errors for non-existent entities
+        self.test_crud_404_errors()
+        
+        return all(update_results + delete_results)
+
+    def test_crud_404_errors(self):
+        """Test 404 errors for non-existent entities"""
+        try:
+            # Test update non-existent teacher
+            response = requests.put(f"{self.api_url}/teachers/NONEXISTENT", json={"name": "Test"}, timeout=5)
+            teacher_404 = response.status_code == 404
+            
+            # Test update non-existent room
+            response = requests.put(f"{self.api_url}/rooms/NONEXISTENT", json={"name": "Test"}, timeout=5)
+            room_404 = response.status_code == 404
+            
+            # Test update non-existent subject
+            response = requests.put(f"{self.api_url}/subjects/NONEXISTENT", json={"name": "Test"}, timeout=5)
+            subject_404 = response.status_code == 404
+            
+            # Test delete non-existent entities
+            response = requests.delete(f"{self.api_url}/teachers/NONEXISTENT", timeout=5)
+            teacher_del_404 = response.status_code == 404
+            
+            response = requests.delete(f"{self.api_url}/rooms/NONEXISTENT", timeout=5)
+            room_del_404 = response.status_code == 404
+            
+            response = requests.delete(f"{self.api_url}/subjects/NONEXISTENT", timeout=5)
+            subject_del_404 = response.status_code == 404
+            
+            success = all([teacher_404, room_404, subject_404, teacher_del_404, room_del_404, subject_del_404])
+            self.log_test("CRUD 404 Error Handling", success, "Non-existent entity handling")
+            return success
+        except Exception as e:
+            self.log_test("CRUD 404 Error Handling", False, str(e))
+            return False
+
     def test_validation_errors(self):
         """Test API validation"""
         try:
@@ -271,10 +504,13 @@ class TimetableAPITester:
         # Data retrieval
         data_success, initial_data = self.test_get_all_data()
         
-        # CRUD operations
+        # Basic CRUD operations (CREATE)
         self.test_add_teacher()
         self.test_add_room()
         self.test_add_subject()
+        
+        # Full CRUD operations (UPDATE & DELETE)
+        self.test_crud_operations()
         
         # Core timetable functionality
         generate_success, timetable_data = self.test_generate_timetable()

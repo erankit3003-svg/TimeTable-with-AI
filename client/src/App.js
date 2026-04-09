@@ -4,6 +4,7 @@ import './App.css';
 import Dashboard from './components/Dashboard';
 import TimetableGrid from './components/TimetableGrid';
 import AddForms from './components/AddForms';
+import Flowchart from './components/Flowchart';
 import { Toaster } from 'sonner';
 import { toast } from 'sonner';
 
@@ -164,7 +165,7 @@ function App() {
       {/* Navigation */}
       <nav className="app-nav">
         <div className="nav-inner">
-          {['dashboard', 'timetable', 'add-data'].map(tab => (
+          {['dashboard', 'timetable', 'add-data', 'flowchart'].map(tab => (
             <button
               key={tab}
               data-testid={`${tab}-tab`}
@@ -174,6 +175,7 @@ function App() {
               {tab === 'dashboard' && 'Dashboard'}
               {tab === 'timetable' && 'Timetable View'}
               {tab === 'add-data' && 'Add Data'}
+              {tab === 'flowchart' && 'Algorithm Flow'}
             </button>
           ))}
         </div>
@@ -189,6 +191,7 @@ function App() {
             loading={loading}
             conflicts={conflicts}
             onDetectConflicts={detectConflicts}
+            apiUrl={API_URL}
           />
         )}
         {activeTab === 'timetable' && (
@@ -208,6 +211,9 @@ function App() {
             apiUrl={API_URL}
             data={data}
           />
+        )}
+        {activeTab === 'flowchart' && (
+          <Flowchart />
         )}
       </main>
     </div>

@@ -57,18 +57,10 @@
   },
   {
     "id": "SUB008",
-    "name": "Test Subject 074750",
-    "code": "TST0747",
+    "name": "Test Subject 080349",
+    "code": "TST0803",
     "credits": 3,
     "type": "Theory",
     "requiredSessions": 2
-  },
-  {
-    "id": "SUB009",
-    "name": "Test Subject Frontend",
-    "code": "TST999",
-    "credits": 4,
-    "type": "Practical",
-    "requiredSessions": 3
   }
 ]

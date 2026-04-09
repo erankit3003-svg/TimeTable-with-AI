@@ -1,8 +1,181 @@
-import React from 'react';
+import React, { useState } from 'react';
+import axios from 'axios';
+import { toast } from 'sonner';
 
-const Dashboard = ({ data, onGenerate, onRefresh, loading, conflicts, onDetectConflicts }) => {
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+const SLOTS = ['09:00-10:00', '10:00-11:00', '11:00-12:00', '14:00-15:00', '15:00-16:00'];
+
+const EditIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+);
+
+const TrashIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+);
+
+const XIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+);
+
+const Dashboard = ({ data, onGenerate, onRefresh, loading, conflicts, onDetectConflicts, apiUrl }) => {
+  const [editModal, setEditModal] = useState(null); // { type, item }
+  const [editForm, setEditForm] = useState({});
+  const [saving, setSaving] = useState(false);
+
+  const openEdit = (type, item) => {
+    setEditModal({ type, item });
+    if (type === 'teacher') {
+      setEditForm({ name: item.name, subjects: item.subjects?.join(', ') || '', days: Object.keys(item.availability || {}) });
+    } else if (type === 'room') {
+      setEditForm({ name: item.name, capacity: item.capacity, type: item.type, facilities: item.facilities?.join(', ') || '' });
+    } else if (type === 'subject') {
+      setEditForm({ name: item.name, code: item.code, credits: item.credits, type: item.type, requiredSessions: item.requiredSessions });
+    }
+  };
+
+  const closeEdit = () => { setEditModal(null); setEditForm({}); };
+
+  const saveEdit = async () => {
+    if (!editModal) return;
+    setSaving(true);
+    const { type, item } = editModal;
+    try {
+      let payload = {};
+      if (type === 'teacher') {
+        const availability = {};
+        (editForm.days || []).forEach(d => { availability[d] = [...SLOTS]; });
+        payload = { name: editForm.name, subjects: editForm.subjects.split(',').map(s => s.trim()).filter(Boolean), availability };
+      } else if (type === 'room') {
+        payload = { name: editForm.name, capacity: parseInt(editForm.capacity), type: editForm.type, facilities: editForm.facilities.split(',').map(f => f.trim()).filter(Boolean) };
+      } else if (type === 'subject') {
+        payload = { name: editForm.name, code: editForm.code, credits: parseInt(editForm.credits), type: editForm.type, requiredSessions: parseInt(editForm.requiredSessions) };
+      }
+      await axios.put(`${apiUrl}/${type}s/${item.id}`, payload);
+      toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} updated`);
+      closeEdit();
+      onRefresh();
+    } catch (err) {
+      toast.error('Failed to update');
+    }
+    setSaving(false);
+  };
+
+  const handleDelete = async (type, id, name) => {
+    if (!window.confirm(`Delete "${name}"? This cannot be undone.`)) return;
+    try {
+      await axios.delete(`${apiUrl}/${type}s/${id}`);
+      toast.success(`${name} deleted`);
+      onRefresh();
+    } catch (err) {
+      toast.error('Failed to delete');
+    }
+  };
+
+  const toggleEditDay = (day) => {
+    setEditForm(prev => {
+      const days = prev.days || [];
+      return { ...prev, days: days.includes(day) ? days.filter(d => d !== day) : [...days, day] };
+    });
+  };
+
   return (
     <div className="dashboard">
+      {/* Edit Modal */}
+      {editModal && (
+        <div className="modal-overlay" data-testid="edit-modal-overlay" onClick={closeEdit}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} data-testid="edit-modal">
+            <div className="modal-header">
+              <h3 className="modal-title">Edit {editModal.type.charAt(0).toUpperCase() + editModal.type.slice(1)}</h3>
+              <button className="modal-close" onClick={closeEdit} data-testid="edit-modal-close"><XIcon /></button>
+            </div>
+            <div className="modal-body">
+              {editModal.type === 'teacher' && (
+                <>
+                  <div className="form-group">
+                    <label className="form-label">Name</label>
+                    <input className="form-input" data-testid="edit-teacher-name" value={editForm.name || ''} onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Subjects (comma-separated)</label>
+                    <input className="form-input" data-testid="edit-teacher-subjects" value={editForm.subjects || ''} onChange={e => setEditForm(p => ({ ...p, subjects: e.target.value }))} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Available Days</label>
+                    <div className="day-selector">
+                      {DAYS.map(day => (
+                        <button key={day} type="button" className={`day-btn ${(editForm.days || []).includes(day) ? 'active' : ''}`} onClick={() => toggleEditDay(day)}>{day.slice(0, 3)}</button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+              {editModal.type === 'room' && (
+                <>
+                  <div className="form-group">
+                    <label className="form-label">Name</label>
+                    <input className="form-input" data-testid="edit-room-name" value={editForm.name || ''} onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} />
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label className="form-label">Capacity</label>
+                      <input className="form-input" data-testid="edit-room-capacity" type="number" value={editForm.capacity || 30} onChange={e => setEditForm(p => ({ ...p, capacity: e.target.value }))} />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Type</label>
+                      <select className="form-input" data-testid="edit-room-type" value={editForm.type || 'Classroom'} onChange={e => setEditForm(p => ({ ...p, type: e.target.value }))}>
+                        <option value="Classroom">Classroom</option>
+                        <option value="Lab">Lab</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Facilities (comma-separated)</label>
+                    <input className="form-input" data-testid="edit-room-facilities" value={editForm.facilities || ''} onChange={e => setEditForm(p => ({ ...p, facilities: e.target.value }))} />
+                  </div>
+                </>
+              )}
+              {editModal.type === 'subject' && (
+                <>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label className="form-label">Name</label>
+                      <input className="form-input" data-testid="edit-subject-name" value={editForm.name || ''} onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Code</label>
+                      <input className="form-input" data-testid="edit-subject-code" value={editForm.code || ''} onChange={e => setEditForm(p => ({ ...p, code: e.target.value }))} />
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label className="form-label">Type</label>
+                      <select className="form-input" data-testid="edit-subject-type" value={editForm.type || 'Theory'} onChange={e => setEditForm(p => ({ ...p, type: e.target.value }))}>
+                        <option value="Theory">Theory</option>
+                        <option value="Practical">Practical</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Credits</label>
+                      <input className="form-input" data-testid="edit-subject-credits" type="number" min="1" value={editForm.credits || 3} onChange={e => setEditForm(p => ({ ...p, credits: e.target.value }))} />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Sessions</label>
+                      <input className="form-input" data-testid="edit-subject-sessions" type="number" min="1" value={editForm.requiredSessions || 3} onChange={e => setEditForm(p => ({ ...p, requiredSessions: e.target.value }))} />
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-outline" onClick={closeEdit}>Cancel</button>
+              <button className="btn btn-primary" onClick={saveEdit} disabled={saving} data-testid="edit-save-btn">
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Action Bar */}
       <div className="action-bar">
         <div>
@@ -41,19 +214,13 @@ const Dashboard = ({ data, onGenerate, onRefresh, loading, conflicts, onDetectCo
               <div key={index} className="conflict-item" data-testid={`conflict-item-${index}`}>
                 <div className="conflict-info">
                   <span className="conflict-type">{conflict.type}</span>
-                  <span className="conflict-detail">
-                    {conflict.teacher || conflict.room} &mdash; {conflict.day} {conflict.timeSlot}
-                  </span>
-                  {conflict.subjects && (
-                    <span className="conflict-subjects">Subjects: {conflict.subjects.join(', ')}</span>
-                  )}
+                  <span className="conflict-detail">{conflict.teacher || conflict.room} &mdash; {conflict.day} {conflict.timeSlot}</span>
+                  {conflict.subjects && <span className="conflict-subjects">Subjects: {conflict.subjects.join(', ')}</span>}
                 </div>
                 <span className={`badge badge-${conflict.severity.toLowerCase()}`}>{conflict.severity}</span>
               </div>
             ))}
-            {conflicts.length > 5 && (
-              <p className="conflict-more">+{conflicts.length - 5} more conflicts</p>
-            )}
+            {conflicts.length > 5 && <p className="conflict-more">+{conflicts.length - 5} more</p>}
           </div>
         </div>
       )}
@@ -71,7 +238,7 @@ const Dashboard = ({ data, onGenerate, onRefresh, loading, conflicts, onDetectCo
           <div className="table-wrap">
             <table className="data-table">
               <thead>
-                <tr><th>ID</th><th>Name</th><th>Subjects</th><th>Available Days</th></tr>
+                <tr><th>ID</th><th>Name</th><th>Subjects</th><th>Available Days</th><th style={{width:'90px'}}>Actions</th></tr>
               </thead>
               <tbody>
                 {data.teachers.map(t => (
@@ -80,15 +247,19 @@ const Dashboard = ({ data, onGenerate, onRefresh, loading, conflicts, onDetectCo
                     <td className="cell-name">{t.name}</td>
                     <td>{t.subjects?.join(', ') || 'N/A'}</td>
                     <td>{Object.keys(t.availability || {}).length} days</td>
+                    <td>
+                      <div className="row-actions">
+                        <button className="icon-btn icon-edit" data-testid={`edit-teacher-${t.id}`} title="Edit" onClick={() => openEdit('teacher', t)}><EditIcon /></button>
+                        <button className="icon-btn icon-delete" data-testid={`delete-teacher-${t.id}`} title="Delete" onClick={() => handleDelete('teacher', t.id, t.name)}><TrashIcon /></button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         ) : (
-          <div className="empty">
-            <p className="empty-msg">No teachers added yet</p>
-          </div>
+          <div className="empty"><p className="empty-msg">No teachers added yet</p></div>
         )}
       </section>
 
@@ -105,7 +276,7 @@ const Dashboard = ({ data, onGenerate, onRefresh, loading, conflicts, onDetectCo
           <div className="table-wrap">
             <table className="data-table">
               <thead>
-                <tr><th>ID</th><th>Name</th><th>Type</th><th>Capacity</th><th>Facilities</th></tr>
+                <tr><th>ID</th><th>Name</th><th>Type</th><th>Capacity</th><th>Facilities</th><th style={{width:'90px'}}>Actions</th></tr>
               </thead>
               <tbody>
                 {data.rooms.map(r => (
@@ -115,6 +286,12 @@ const Dashboard = ({ data, onGenerate, onRefresh, loading, conflicts, onDetectCo
                     <td><span className={`tag ${r.type === 'Lab' ? 'tag-blue' : 'tag-green'}`}>{r.type}</span></td>
                     <td>{r.capacity}</td>
                     <td className="cell-small">{r.facilities?.join(', ') || 'N/A'}</td>
+                    <td>
+                      <div className="row-actions">
+                        <button className="icon-btn icon-edit" data-testid={`edit-room-${r.id}`} title="Edit" onClick={() => openEdit('room', r)}><EditIcon /></button>
+                        <button className="icon-btn icon-delete" data-testid={`delete-room-${r.id}`} title="Delete" onClick={() => handleDelete('room', r.id, r.name)}><TrashIcon /></button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -138,7 +315,7 @@ const Dashboard = ({ data, onGenerate, onRefresh, loading, conflicts, onDetectCo
           <div className="table-wrap">
             <table className="data-table">
               <thead>
-                <tr><th>Code</th><th>Name</th><th>Type</th><th>Credits</th><th>Sessions</th></tr>
+                <tr><th>Code</th><th>Name</th><th>Type</th><th>Credits</th><th>Sessions</th><th style={{width:'90px'}}>Actions</th></tr>
               </thead>
               <tbody>
                 {data.subjects.map(s => (
@@ -148,6 +325,12 @@ const Dashboard = ({ data, onGenerate, onRefresh, loading, conflicts, onDetectCo
                     <td><span className={`tag ${s.type === 'Practical' ? 'tag-amber' : 'tag-indigo'}`}>{s.type}</span></td>
                     <td>{s.credits}</td>
                     <td>{s.requiredSessions}</td>
+                    <td>
+                      <div className="row-actions">
+                        <button className="icon-btn icon-edit" data-testid={`edit-subject-${s.id}`} title="Edit" onClick={() => openEdit('subject', s)}><EditIcon /></button>
+                        <button className="icon-btn icon-delete" data-testid={`delete-subject-${s.id}`} title="Delete" onClick={() => handleDelete('subject', s.id, s.name)}><TrashIcon /></button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>

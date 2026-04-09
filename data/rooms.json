@@ -61,22 +61,12 @@
   },
   {
     "id": "R206",
-    "name": "Test Room 074750",
+    "name": "Test Room 080349",
     "capacity": 30,
     "type": "Classroom",
     "facilities": [
       "Projector",
       "Whiteboard"
-    ]
-  },
-  {
-    "id": "R207",
-    "name": "Test Room Frontend",
-    "capacity": 35,
-    "type": "Lab",
-    "facilities": [
-      "Computers",
-      "Projector"
     ]
   }
 ]
