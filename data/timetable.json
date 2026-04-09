@@ -139,8 +139,8 @@
     "subjectCode": "CS101",
     "teacher": "Dr. Verma",
     "teacherId": "T004",
-    "room": "Test Room 081714",
-    "roomId": "R206",
+    "room": "Computer Lab 1",
+    "roomId": "LAB1",
     "type": "Theory"
   },
   {
@@ -175,8 +175,8 @@
     "subjectCode": "ENG101",
     "teacher": "Prof. Singh",
     "teacherId": "T005",
-    "room": "Test Room 081714",
-    "roomId": "R206",
+    "room": "Computer Lab 1",
+    "roomId": "LAB1",
     "type": "Theory"
   },
   {
@@ -187,8 +187,8 @@
     "subjectCode": "ENG101",
     "teacher": "Prof. Singh",
     "teacherId": "T005",
-    "room": "Test Room 081714",
-    "roomId": "R206",
+    "room": "Computer Lab 1",
+    "roomId": "LAB1",
     "type": "Theory"
   },
   {

@@ -5,8 +5,7 @@ import Dashboard from './components/Dashboard';
 import TimetableGrid from './components/TimetableGrid';
 import AddForms from './components/AddForms';
 import Flowchart from './components/Flowchart';
-import { Toaster } from 'sonner';
-import { toast } from 'sonner';
+import { Toaster, toast } from './components/Toast';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
@@ -121,7 +120,7 @@ function App() {
 
   return (
     <div className="app-root">
-      <Toaster position="top-right" richColors />
+      <Toaster />
 
       {/* Header */}
       <header className="app-header">
