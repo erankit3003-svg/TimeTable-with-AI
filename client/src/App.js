@@ -3,7 +3,8 @@ import axios from 'axios';
 import './App.css';
 import Dashboard from './components/Dashboard';
 import TimetableGrid from './components/TimetableGrid';
-import { Toaster } from './components/ui/sonner';
+import AddForms from './components/AddForms';
+import { Toaster } from 'sonner';
 import { toast } from 'sonner';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
@@ -17,9 +18,10 @@ function App() {
     timetable: []
   });
   const [loading, setLoading] = useState(false);
+  const [optimizing, setOptimizing] = useState(false);
   const [conflicts, setConflicts] = useState([]);
+  const [optimizeResult, setOptimizeResult] = useState(null);
 
-  // Fetch initial data
   useEffect(() => {
     fetchData();
   }, []);
@@ -38,14 +40,16 @@ function App() {
 
   const generateTimetable = async () => {
     setLoading(true);
+    setOptimizeResult(null);
     try {
       const response = await axios.post(`${API_URL}/generate`);
       if (response.data.success) {
         setData(prev => ({ ...prev, timetable: response.data.data }));
+        setConflicts(response.data.conflicts || []);
         toast.success(`Timetable generated! ${response.data.stats.totalSessions} sessions created`);
-        
-        // Auto-detect conflicts
-        detectConflicts(response.data.data);
+        if (response.data.conflicts?.length > 0) {
+          toast.warning(`${response.data.conflicts.length} conflict(s) detected`);
+        }
         setActiveTab('timetable');
       }
     } catch (error) {
@@ -74,6 +78,34 @@ function App() {
     }
   };
 
+  const optimizeTimetable = async () => {
+    setOptimizing(true);
+    setOptimizeResult(null);
+    try {
+      const response = await axios.post(`${API_URL}/optimize`);
+      if (response.data.success) {
+        setOptimizeResult(response.data);
+        if (response.data.timetable) {
+          setData(prev => ({ ...prev, timetable: response.data.timetable }));
+        }
+        // Re-detect conflicts after optimization
+        const conflictRes = await axios.post(`${API_URL}/conflict`);
+        if (conflictRes.data.success) {
+          setConflicts(conflictRes.data.conflicts);
+        }
+        if (response.data.changes?.length > 0) {
+          toast.success(`${response.data.changes.length} session(s) rescheduled`);
+        } else {
+          toast.info(response.data.message);
+        }
+      }
+    } catch (error) {
+      console.error('Error optimizing:', error);
+      toast.error('Optimization failed');
+    }
+    setOptimizing(false);
+  };
+
   const exportTimetable = () => {
     const dataStr = JSON.stringify(data.timetable, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -82,41 +114,48 @@ function App() {
     link.href = url;
     link.download = 'timetable.json';
     link.click();
-    toast.success('Timetable exported successfully');
+    URL.revokeObjectURL(url);
+    toast.success('Timetable exported');
   };
 
   return (
-    <div className="App">
+    <div className="app-root">
       <Toaster position="top-right" richColors />
-      
+
       {/* Header */}
       <header className="app-header">
         <div className="header-content">
           <div className="header-left">
-            <div className="logo-section">
-              <div className="logo-icon">📅</div>
-              <div>
-                <h1 className="app-title" data-testid="app-title">Timetable Generator</h1>
-                <p className="app-subtitle">AI-Based Dynamic Scheduling System</p>
-              </div>
+            <div className="logo-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+                <rect x="6" y="13" width="4" height="3" rx="0.5"/>
+                <rect x="14" y="13" width="4" height="3" rx="0.5"/>
+              </svg>
+            </div>
+            <div>
+              <h1 className="app-title" data-testid="app-title">Timetable Generator</h1>
+              <p className="app-subtitle">Dynamic Scheduling with Constraint Optimization</p>
             </div>
           </div>
           <div className="header-stats">
-            <div className="stat-card">
-              <span className="stat-label">Teachers</span>
-              <span className="stat-value" data-testid="teachers-count">{data.teachers.length}</span>
+            <div className="stat-pill">
+              <span className="stat-num" data-testid="teachers-count">{data.teachers.length}</span>
+              <span className="stat-lbl">Teachers</span>
             </div>
-            <div className="stat-card">
-              <span className="stat-label">Rooms</span>
-              <span className="stat-value" data-testid="rooms-count">{data.rooms.length}</span>
+            <div className="stat-pill">
+              <span className="stat-num" data-testid="rooms-count">{data.rooms.length}</span>
+              <span className="stat-lbl">Rooms</span>
             </div>
-            <div className="stat-card">
-              <span className="stat-label">Subjects</span>
-              <span className="stat-value" data-testid="subjects-count">{data.subjects.length}</span>
+            <div className="stat-pill">
+              <span className="stat-num" data-testid="subjects-count">{data.subjects.length}</span>
+              <span className="stat-lbl">Subjects</span>
             </div>
-            <div className="stat-card">
-              <span className="stat-label">Sessions</span>
-              <span className="stat-value" data-testid="sessions-count">{data.timetable.length}</span>
+            <div className="stat-pill">
+              <span className="stat-num" data-testid="sessions-count">{data.timetable.length}</span>
+              <span className="stat-lbl">Sessions</span>
             </div>
           </div>
         </div>
@@ -124,20 +163,20 @@ function App() {
 
       {/* Navigation */}
       <nav className="app-nav">
-        <button
-          data-testid="dashboard-tab"
-          className={`nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
-          onClick={() => setActiveTab('dashboard')}
-        >
-          Dashboard
-        </button>
-        <button
-          data-testid="timetable-tab"
-          className={`nav-btn ${activeTab === 'timetable' ? 'active' : ''}`}
-          onClick={() => setActiveTab('timetable')}
-        >
-          Timetable View
-        </button>
+        <div className="nav-inner">
+          {['dashboard', 'timetable', 'add-data'].map(tab => (
+            <button
+              key={tab}
+              data-testid={`${tab}-tab`}
+              className={`nav-btn ${activeTab === tab ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab === 'dashboard' && 'Dashboard'}
+              {tab === 'timetable' && 'Timetable View'}
+              {tab === 'add-data' && 'Add Data'}
+            </button>
+          ))}
+        </div>
       </nav>
 
       {/* Main Content */}
@@ -158,6 +197,16 @@ function App() {
             conflicts={conflicts}
             onExport={exportTimetable}
             onDetectConflicts={() => detectConflicts()}
+            onOptimize={optimizeTimetable}
+            optimizing={optimizing}
+            optimizeResult={optimizeResult}
+          />
+        )}
+        {activeTab === 'add-data' && (
+          <AddForms
+            onRefresh={fetchData}
+            apiUrl={API_URL}
+            data={data}
           />
         )}
       </main>
