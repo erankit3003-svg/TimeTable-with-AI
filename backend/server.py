@@ -1,8 +1,10 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, UploadFile, File
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 import os
 import json
+import csv
+import io
 import logging
 from pathlib import Path
 from typing import List, Optional, Dict, Any
@@ -487,6 +489,134 @@ async def export_timetable():
         content=json.dumps(timetable, indent=2),
         media_type="application/json",
         headers={"Content-Disposition": "attachment; filename=timetable.json"}
+    )
+
+# ========== CSV Upload ==========
+
+@api_router.post("/upload/teachers")
+async def upload_teachers_csv(file: UploadFile = File(...)):
+    try:
+        content = await file.read()
+        text = content.decode('utf-8-sig')
+        reader = csv.DictReader(io.StringIO(text))
+        teachers = read_json('teachers.json')
+        added = 0
+        errors = []
+        for i, row in enumerate(reader, 1):
+            name = row.get('name', '').strip()
+            if not name:
+                errors.append(f"Row {i}: missing name")
+                continue
+            subjects = [s.strip() for s in row.get('subjects', '').split(';') if s.strip()]
+            avail_days = [d.strip() for d in row.get('available_days', '').split(';') if d.strip()]
+            availability = {}
+            for d in avail_days:
+                if d in DAYS:
+                    availability[d] = list(TIME_SLOTS)
+            new_id = f"T{str(len(teachers) + 1).zfill(3)}"
+            teachers.append({"id": new_id, "name": name, "subjects": subjects, "availability": availability})
+            added += 1
+        write_json('teachers.json', teachers)
+        return {"success": True, "added": added, "errors": errors, "total": len(teachers)}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@api_router.post("/upload/rooms")
+async def upload_rooms_csv(file: UploadFile = File(...)):
+    try:
+        content = await file.read()
+        text = content.decode('utf-8-sig')
+        reader = csv.DictReader(io.StringIO(text))
+        rooms = read_json('rooms.json')
+        added = 0
+        errors = []
+        for i, row in enumerate(reader, 1):
+            name = row.get('name', '').strip()
+            if not name:
+                errors.append(f"Row {i}: missing name")
+                continue
+            capacity = int(row.get('capacity', '30').strip() or '30')
+            rtype = row.get('type', 'Classroom').strip() or 'Classroom'
+            facilities = [f.strip() for f in row.get('facilities', '').split(';') if f.strip()]
+            new_id = f"R{str(len(rooms) + 200)}"
+            rooms.append({"id": new_id, "name": name, "capacity": capacity, "type": rtype, "facilities": facilities})
+            added += 1
+        write_json('rooms.json', rooms)
+        return {"success": True, "added": added, "errors": errors, "total": len(rooms)}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@api_router.post("/upload/subjects")
+async def upload_subjects_csv(file: UploadFile = File(...)):
+    try:
+        content = await file.read()
+        text = content.decode('utf-8-sig')
+        reader = csv.DictReader(io.StringIO(text))
+        subjects = read_json('subjects.json')
+        added = 0
+        errors = []
+        for i, row in enumerate(reader, 1):
+            name = row.get('name', '').strip()
+            code = row.get('code', '').strip()
+            if not name or not code:
+                errors.append(f"Row {i}: missing name or code")
+                continue
+            credits = int(row.get('credits', '3').strip() or '3')
+            stype = row.get('type', 'Theory').strip() or 'Theory'
+            sessions = int(row.get('required_sessions', '3').strip() or '3')
+            new_id = f"SUB{str(len(subjects) + 1).zfill(3)}"
+            subjects.append({"id": new_id, "name": name, "code": code.upper(), "credits": credits, "type": stype, "requiredSessions": sessions})
+            added += 1
+        write_json('subjects.json', subjects)
+        return {"success": True, "added": added, "errors": errors, "total": len(subjects)}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+# ========== Sample CSV Downloads ==========
+
+@api_router.get("/sample/teachers")
+async def sample_teachers_csv():
+    from starlette.responses import Response
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['name', 'subjects', 'available_days'])
+    writer.writerow(['Dr. Sharma', 'Mathematics;Statistics', 'Monday;Tuesday;Wednesday;Thursday;Friday'])
+    writer.writerow(['Prof. Kumar', 'Physics;Electronics', 'Monday;Tuesday;Wednesday;Thursday;Friday'])
+    writer.writerow(['Ms. Patel', 'Chemistry;Biology', 'Monday;Tuesday;Wednesday;Thursday;Friday'])
+    return Response(
+        content=output.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=sample_teachers.csv"}
+    )
+
+@api_router.get("/sample/rooms")
+async def sample_rooms_csv():
+    from starlette.responses import Response
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['name', 'capacity', 'type', 'facilities'])
+    writer.writerow(['Room 101', '40', 'Classroom', 'Projector;Whiteboard'])
+    writer.writerow(['Room 102', '35', 'Classroom', 'Whiteboard'])
+    writer.writerow(['Computer Lab 1', '30', 'Lab', 'Computers;Projector'])
+    return Response(
+        content=output.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=sample_rooms.csv"}
+    )
+
+@api_router.get("/sample/subjects")
+async def sample_subjects_csv():
+    from starlette.responses import Response
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['name', 'code', 'credits', 'type', 'required_sessions'])
+    writer.writerow(['Mathematics', 'MATH101', '4', 'Theory', '4'])
+    writer.writerow(['Physics', 'PHY101', '4', 'Theory', '3'])
+    writer.writerow(['Programming', 'CS102', '4', 'Practical', '2'])
+    return Response(
+        content=output.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=sample_subjects.csv"}
     )
 
 app.include_router(api_router)

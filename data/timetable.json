@@ -50,11 +50,11 @@
   {
     "id": "TT0005",
     "day": "Monday",
-    "timeSlot": "10:00-11:00",
+    "timeSlot": "09:00-10:00",
     "subject": "Physics",
     "subjectCode": "PHY101",
-    "teacher": "Prof. Kumar",
-    "teacherId": "T002",
+    "teacher": "Test Teacher CSV",
+    "teacherId": "T007",
     "room": "Room 102",
     "roomId": "R102",
     "type": "Theory"
@@ -62,7 +62,7 @@
   {
     "id": "TT0006",
     "day": "Monday",
-    "timeSlot": "11:00-12:00",
+    "timeSlot": "10:00-11:00",
     "subject": "Physics",
     "subjectCode": "PHY101",
     "teacher": "Prof. Kumar",
@@ -74,7 +74,7 @@
   {
     "id": "TT0007",
     "day": "Monday",
-    "timeSlot": "14:00-15:00",
+    "timeSlot": "11:00-12:00",
     "subject": "Physics",
     "subjectCode": "PHY101",
     "teacher": "Prof. Kumar",
@@ -91,8 +91,8 @@
     "subjectCode": "CHEM101",
     "teacher": "Ms. Patel",
     "teacherId": "T003",
-    "room": "Room 102",
-    "roomId": "R102",
+    "room": "Room 103",
+    "roomId": "R103",
     "type": "Theory"
   },
   {
@@ -115,8 +115,8 @@
     "subjectCode": "CHEM101",
     "teacher": "Ms. Patel",
     "teacherId": "T003",
-    "room": "Room 103",
-    "roomId": "R103",
+    "room": "Room 102",
+    "roomId": "R102",
     "type": "Theory"
   },
   {
@@ -139,8 +139,8 @@
     "subjectCode": "CS101",
     "teacher": "Dr. Verma",
     "teacherId": "T004",
-    "room": "Computer Lab 1",
-    "roomId": "LAB1",
+    "room": "Test Room 124327",
+    "roomId": "R206",
     "type": "Theory"
   },
   {
@@ -163,8 +163,8 @@
     "subjectCode": "ENG101",
     "teacher": "Prof. Singh",
     "teacherId": "T005",
-    "room": "Room 103",
-    "roomId": "R103",
+    "room": "Test Room 124327",
+    "roomId": "R206",
     "type": "Theory"
   },
   {
@@ -175,8 +175,8 @@
     "subjectCode": "ENG101",
     "teacher": "Prof. Singh",
     "teacherId": "T005",
-    "room": "Computer Lab 1",
-    "roomId": "LAB1",
+    "room": "Test Room 124327",
+    "roomId": "R206",
     "type": "Theory"
   },
   {
@@ -187,8 +187,8 @@
     "subjectCode": "ENG101",
     "teacher": "Prof. Singh",
     "teacherId": "T005",
-    "room": "Computer Lab 1",
-    "roomId": "LAB1",
+    "room": "Room 103",
+    "roomId": "R103",
     "type": "Theory"
   },
   {
@@ -218,6 +218,18 @@
   {
     "id": "TT0019",
     "day": "Monday",
+    "timeSlot": "14:00-15:00",
+    "subject": "Electronics",
+    "subjectCode": "ECE101",
+    "teacher": "Prof. Kumar",
+    "teacherId": "T002",
+    "room": "Test Room 124327",
+    "roomId": "R206",
+    "type": "Theory"
+  },
+  {
+    "id": "TT0020",
+    "day": "Monday",
     "timeSlot": "15:00-16:00",
     "subject": "Electronics",
     "subjectCode": "ECE101",
@@ -225,18 +237,6 @@
     "teacherId": "T002",
     "room": "Room 102",
     "roomId": "R102",
-    "type": "Theory"
-  },
-  {
-    "id": "TT0020",
-    "day": "Tuesday",
-    "timeSlot": "09:00-10:00",
-    "subject": "Electronics",
-    "subjectCode": "ECE101",
-    "teacher": "Prof. Kumar",
-    "teacherId": "T002",
-    "room": "Room 101",
-    "roomId": "R101",
     "type": "Theory"
   }
 ]

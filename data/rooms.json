@@ -58,5 +58,42 @@
       "Lab Equipment",
       "Whiteboard"
     ]
+  },
+  {
+    "id": "R206",
+    "name": "Test Room 124327",
+    "capacity": 30,
+    "type": "Classroom",
+    "facilities": [
+      "Projector",
+      "Whiteboard"
+    ]
+  },
+  {
+    "id": "R207",
+    "name": "Test Room CSV",
+    "capacity": 40,
+    "type": "Classroom",
+    "facilities": [
+      "Projector",
+      "Whiteboard"
+    ]
+  },
+  {
+    "id": "R208",
+    "name": "Lab Room CSV",
+    "capacity": 30,
+    "type": "Lab",
+    "facilities": [
+      "Computers",
+      "Projector"
+    ]
+  },
+  {
+    "id": "R209",
+    "name": "",
+    "capacity": 30,
+    "type": "Classroom",
+    "facilities": []
   }
 ]

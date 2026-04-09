@@ -54,5 +54,37 @@
     "credits": 3,
     "type": "Theory",
     "requiredSessions": 2
+  },
+  {
+    "id": "SUB008",
+    "name": "Test Subject 124327",
+    "code": "TST1243",
+    "credits": 3,
+    "type": "Theory",
+    "requiredSessions": 2
+  },
+  {
+    "id": "SUB009",
+    "name": "Test Subject CSV",
+    "code": "TST101",
+    "credits": 3,
+    "type": "Theory",
+    "requiredSessions": 3
+  },
+  {
+    "id": "SUB010",
+    "name": "Practical Subject",
+    "code": "PRC101",
+    "credits": 4,
+    "type": "Practical",
+    "requiredSessions": 2
+  },
+  {
+    "id": "SUB011",
+    "name": "",
+    "code": "",
+    "credits": 3,
+    "type": "Theory",
+    "requiredSessions": 3
   }
 ]

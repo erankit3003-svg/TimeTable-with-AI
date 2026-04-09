@@ -6,7 +6,7 @@ import sys
 from datetime import datetime
 
 class TimetableAPITester:
-    def __init__(self, base_url="http://localhost:3001"):
+    def __init__(self, base_url="https://conflict-resolver-25.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
@@ -491,6 +491,86 @@ class TimetableAPITester:
             self.log_test("API Validation Errors", False, str(e))
             return False
 
+    def test_sample_csv_downloads(self):
+        """Test sample CSV download endpoints"""
+        endpoints = [
+            ("teachers", "sample_teachers.csv"),
+            ("rooms", "sample_rooms.csv"),
+            ("subjects", "sample_subjects.csv")
+        ]
+        
+        all_success = True
+        for entity, filename in endpoints:
+            try:
+                response = requests.get(f"{self.api_url}/sample/{entity}", timeout=10)
+                success = response.status_code == 200
+                if success:
+                    content_type = response.headers.get('Content-Type', '')
+                    content_disposition = response.headers.get('Content-Disposition', '')
+                    success = ('text/csv' in content_type and 
+                             'attachment' in content_disposition and 
+                             filename in content_disposition and
+                             len(response.text) > 0)
+                    if success:
+                        lines = response.text.strip().split('\n')
+                        print(f"   📄 Sample {entity} CSV: {len(lines)} lines")
+                
+                self.log_test(f"GET Sample {entity.title()} CSV", success, f"Status: {response.status_code}")
+                if not success:
+                    all_success = False
+            except Exception as e:
+                self.log_test(f"GET Sample {entity.title()} CSV", False, str(e))
+                all_success = False
+        
+        return all_success
+
+    def test_csv_uploads(self):
+        """Test CSV upload endpoints"""
+        import tempfile
+        import os
+        
+        # Test data for each entity type
+        test_data = {
+            "teachers": "name,subjects,available_days\nTest Teacher CSV,Mathematics;Physics,Monday;Tuesday;Wednesday\nAnother Teacher,Chemistry,Thursday;Friday",
+            "rooms": "name,capacity,type,facilities\nTest Room CSV,40,Classroom,Projector;Whiteboard\nLab Room CSV,30,Lab,Computers;Projector",
+            "subjects": "name,code,credits,type,required_sessions\nTest Subject CSV,TST101,3,Theory,3\nPractical Subject,PRC101,4,Practical,2"
+        }
+        
+        all_success = True
+        for entity, csv_content in test_data.items():
+            try:
+                # Create temporary CSV file
+                with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
+                    f.write(csv_content)
+                    temp_file = f.name
+                
+                # Upload CSV file
+                with open(temp_file, 'rb') as f:
+                    files = {'file': (f'test_{entity}.csv', f, 'text/csv')}
+                    response = requests.post(f"{self.api_url}/upload/{entity}", files=files, timeout=15)
+                
+                success = response.status_code == 200
+                if success:
+                    data = response.json()
+                    success = data.get("success") and "added" in data
+                    if success:
+                        added_count = data.get("added", 0)
+                        errors_count = len(data.get("errors", []))
+                        print(f"   📤 Uploaded {entity}: {added_count} added, {errors_count} errors")
+                
+                self.log_test(f"POST Upload {entity.title()} CSV", success, f"Status: {response.status_code}")
+                if not success:
+                    all_success = False
+                
+                # Clean up temp file
+                os.unlink(temp_file)
+                
+            except Exception as e:
+                self.log_test(f"POST Upload {entity.title()} CSV", False, str(e))
+                all_success = False
+        
+        return all_success
+
     def run_all_tests(self):
         """Run comprehensive API test suite"""
         print("🚀 Starting Timetable API Test Suite")
@@ -511,6 +591,14 @@ class TimetableAPITester:
         
         # Full CRUD operations (UPDATE & DELETE)
         self.test_crud_operations()
+        
+        # CSV Features - Sample Downloads
+        print("\n📄 Testing CSV Sample Downloads")
+        self.test_sample_csv_downloads()
+        
+        # CSV Features - File Uploads
+        print("\n📤 Testing CSV File Uploads")
+        self.test_csv_uploads()
         
         # Core timetable functionality
         generate_success, timetable_data = self.test_generate_timetable()
