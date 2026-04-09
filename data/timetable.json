@@ -5,7 +5,7 @@
     "timeSlot": "09:00-10:00",
     "subject": "Mathematics",
     "subjectCode": "MATH101",
-    "teacher": "Dr. Sharma (Updated)",
+    "teacher": "Dr. Sharma",
     "teacherId": "T001",
     "room": "Room 101",
     "roomId": "R101",
@@ -17,7 +17,7 @@
     "timeSlot": "10:00-11:00",
     "subject": "Mathematics",
     "subjectCode": "MATH101",
-    "teacher": "Dr. Sharma (Updated)",
+    "teacher": "Dr. Sharma",
     "teacherId": "T001",
     "room": "Room 101",
     "roomId": "R101",
@@ -29,7 +29,7 @@
     "timeSlot": "11:00-12:00",
     "subject": "Mathematics",
     "subjectCode": "MATH101",
-    "teacher": "Dr. Sharma (Updated)",
+    "teacher": "Dr. Sharma",
     "teacherId": "T001",
     "room": "Room 101",
     "roomId": "R101",
@@ -41,7 +41,7 @@
     "timeSlot": "14:00-15:00",
     "subject": "Mathematics",
     "subjectCode": "MATH101",
-    "teacher": "Dr. Sharma (Updated)",
+    "teacher": "Dr. Sharma",
     "teacherId": "T001",
     "room": "Room 101",
     "roomId": "R101",
@@ -139,8 +139,8 @@
     "subjectCode": "CS101",
     "teacher": "Dr. Verma",
     "teacherId": "T004",
-    "room": "Test Room 080349",
-    "roomId": "R206",
+    "room": "Computer Lab 1",
+    "roomId": "LAB1",
     "type": "Theory"
   },
   {
@@ -175,8 +175,8 @@
     "subjectCode": "ENG101",
     "teacher": "Prof. Singh",
     "teacherId": "T005",
-    "room": "Test Room 080349",
-    "roomId": "R206",
+    "room": "Computer Lab 1",
+    "roomId": "LAB1",
     "type": "Theory"
   },
   {
@@ -187,8 +187,8 @@
     "subjectCode": "ENG101",
     "teacher": "Prof. Singh",
     "teacherId": "T005",
-    "room": "Test Room 080349",
-    "roomId": "R206",
+    "room": "Computer Lab 1",
+    "roomId": "LAB1",
     "type": "Theory"
   },
   {

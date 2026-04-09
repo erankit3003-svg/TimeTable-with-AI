@@ -1,7 +1,7 @@
 [
   {
     "id": "T001",
-    "name": "Dr. Sharma (Updated)",
+    "name": "Dr. Sharma",
     "subjects": [
       "Mathematics",
       "Statistics"
@@ -191,22 +191,6 @@
         "09:00-10:00",
         "11:00-12:00",
         "14:00-15:00"
-      ]
-    }
-  },
-  {
-    "id": "T006",
-    "name": "Test Teacher 080349",
-    "subjects": [
-      "Test Subject"
-    ],
-    "availability": {
-      "Monday": [
-        "09:00-10:00",
-        "10:00-11:00"
-      ],
-      "Tuesday": [
-        "09:00-10:00"
       ]
     }
   }

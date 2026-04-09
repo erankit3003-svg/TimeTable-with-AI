@@ -58,15 +58,5 @@
       "Lab Equipment",
       "Whiteboard"
     ]
-  },
-  {
-    "id": "R206",
-    "name": "Test Room 080349",
-    "capacity": 30,
-    "type": "Classroom",
-    "facilities": [
-      "Projector",
-      "Whiteboard"
-    ]
   }
 ]
