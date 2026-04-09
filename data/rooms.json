@@ -1,0 +1,44 @@
+[
+  {
+    "id": "R101",
+    "name": "Room 101",
+    "capacity": 40,
+    "type": "Classroom",
+    "facilities": ["Projector", "Whiteboard"]
+  },
+  {
+    "id": "R102",
+    "name": "Room 102",
+    "capacity": 35,
+    "type": "Classroom",
+    "facilities": ["Whiteboard"]
+  },
+  {
+    "id": "R103",
+    "name": "Room 103",
+    "capacity": 50,
+    "type": "Classroom",
+    "facilities": ["Projector", "Whiteboard", "Smart Board"]
+  },
+  {
+    "id": "LAB1",
+    "name": "Computer Lab 1",
+    "capacity": 30,
+    "type": "Lab",
+    "facilities": ["Computers", "Projector"]
+  },
+  {
+    "id": "LAB2",
+    "name": "Physics Lab",
+    "capacity": 25,
+    "type": "Lab",
+    "facilities": ["Lab Equipment", "Whiteboard"]
+  },
+  {
+    "id": "LAB3",
+    "name": "Chemistry Lab",
+    "capacity": 25,
+    "type": "Lab",
+    "facilities": ["Lab Equipment", "Whiteboard"]
+  }
+]

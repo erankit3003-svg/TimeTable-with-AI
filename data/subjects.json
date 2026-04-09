@@ -1,0 +1,58 @@
+[
+  {
+    "id": "SUB001",
+    "name": "Mathematics",
+    "code": "MATH101",
+    "credits": 4,
+    "type": "Theory",
+    "requiredSessions": 4
+  },
+  {
+    "id": "SUB002",
+    "name": "Physics",
+    "code": "PHY101",
+    "credits": 4,
+    "type": "Theory",
+    "requiredSessions": 3
+  },
+  {
+    "id": "SUB003",
+    "name": "Chemistry",
+    "code": "CHEM101",
+    "credits": 4,
+    "type": "Theory",
+    "requiredSessions": 3
+  },
+  {
+    "id": "SUB004",
+    "name": "Computer Science",
+    "code": "CS101",
+    "credits": 4,
+    "type": "Theory",
+    "requiredSessions": 3
+  },
+  {
+    "id": "SUB005",
+    "name": "English",
+    "code": "ENG101",
+    "credits": 3,
+    "type": "Theory",
+    "requiredSessions": 3
+  },
+  {
+    "id": "SUB006",
+    "name": "Programming",
+    "code": "CS102",
+    "credits": 4,
+    "type": "Practical",
+    "requiredSessions": 2
+  },
+  {
+    "id": "SUB007",
+    "name": "Electronics",
+    "code": "ECE101",
+    "credits": 3,
+    "type": "Theory",
+    "requiredSessions": 2
+  }
+]
