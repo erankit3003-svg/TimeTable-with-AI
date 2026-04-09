@@ -37,6 +37,13 @@ AI-Based Dynamic Timetable Generation System with Real-Time Constraint Optimizat
 - Export timetable as JSON download
 - Real-time statistics display
 
+### Phase 2 - CRUD + Flowchart (COMPLETE - Feb 2026)
+- Full Edit/Delete CRUD for teachers, rooms, subjects with modal UI
+- Algorithm Flowchart visualization (8-step flow + constraint priorities)
+- Impact minimization scoring table
+- Interactive expandable flow steps
+- Confirmation dialogs for delete operations
+
 ### API Endpoints
 - GET /api/health - Health check
 - GET /api/data - All data
@@ -67,9 +74,9 @@ AI-Based Dynamic Timetable Generation System with Real-Time Constraint Optimizat
 - [x] Impact minimization
 
 ### P1 (Next)
-- [ ] Edit/Delete teachers, rooms, subjects
 - [ ] Adaptive learning from conflict history
-- [ ] Flowchart UI for scheduling visualization
+- [ ] Multi-class/section support
+- [ ] Print/PDF timetable export
 
 ### P2 (Future)
 - [ ] Multiple timetable comparison
