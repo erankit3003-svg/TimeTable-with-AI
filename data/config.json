@@ -1,0 +1,57 @@
+{
+  "className": "Final Test Class",
+  "workingDays": 5,
+  "hoursPerDay": 6.0,
+  "durationMinutes": 45,
+  "startTime": "09:00",
+  "subjects": [
+    {
+      "name": "Mathematics",
+      "teacher": "Dr. Sharma",
+      "credits": 7,
+      "type": "Theory"
+    },
+    {
+      "name": "Physics",
+      "teacher": "Prof. Kumar",
+      "credits": 4,
+      "type": "Theory"
+    },
+    {
+      "name": "Chemistry",
+      "teacher": "Ms. Patel",
+      "credits": 4,
+      "type": "Theory"
+    },
+    {
+      "name": "Computer Science",
+      "teacher": "Dr. Verma",
+      "credits": 4,
+      "type": "Theory"
+    },
+    {
+      "name": "English",
+      "teacher": "Prof. Singh",
+      "credits": 3,
+      "type": "Theory"
+    },
+    {
+      "name": "Programming",
+      "teacher": "Dr. Verma",
+      "credits": 4,
+      "type": "Practical"
+    },
+    {
+      "name": "Electronics",
+      "teacher": "Prof. Kumar",
+      "credits": 3,
+      "type": "Theory"
+    },
+    {
+      "name": "TEST_Subject_New",
+      "teacher": "TBA",
+      "credits": 3,
+      "type": "Theory"
+    }
+  ]
+}

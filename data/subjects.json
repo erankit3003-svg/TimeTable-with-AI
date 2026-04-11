@@ -3,9 +3,9 @@
     "id": "SUB001",
     "name": "Mathematics",
     "code": "MATH101",
-    "credits": 4,
+    "credits": 7,
     "type": "Theory",
-    "requiredSessions": 4
+    "requiredSessions": 7
   },
   {
     "id": "SUB002",
@@ -54,5 +54,13 @@
     "credits": 3,
     "type": "Theory",
     "requiredSessions": 2
+  },
+  {
+    "id": "SUB008",
+    "name": "TEST_Subject_New",
+    "code": "TEST101",
+    "credits": 3,
+    "type": "Theory",
+    "requiredSessions": 3
   }
 ]

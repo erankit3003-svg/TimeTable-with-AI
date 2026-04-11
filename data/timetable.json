@@ -1,242 +1,342 @@
-[
-  {
-    "id": "TT0001",
-    "day": "Monday",
-    "timeSlot": "09:00-10:00",
-    "subject": "Mathematics",
-    "subjectCode": "MATH101",
-    "teacher": "Dr. Sharma",
-    "teacherId": "T001",
-    "room": "Room 101",
-    "roomId": "R101",
-    "type": "Theory"
-  },
-  {
-    "id": "TT0002",
-    "day": "Monday",
-    "timeSlot": "10:00-11:00",
-    "subject": "Mathematics",
-    "subjectCode": "MATH101",
-    "teacher": "Dr. Sharma",
-    "teacherId": "T001",
-    "room": "Room 101",
-    "roomId": "R101",
-    "type": "Theory"
-  },
-  {
-    "id": "TT0003",
-    "day": "Monday",
-    "timeSlot": "11:00-12:00",
-    "subject": "Mathematics",
-    "subjectCode": "MATH101",
-    "teacher": "Dr. Sharma",
-    "teacherId": "T001",
-    "room": "Room 101",
-    "roomId": "R101",
-    "type": "Theory"
-  },
-  {
-    "id": "TT0004",
-    "day": "Monday",
-    "timeSlot": "14:00-15:00",
-    "subject": "Mathematics",
-    "subjectCode": "MATH101",
-    "teacher": "Dr. Sharma",
-    "teacherId": "T001",
-    "room": "Room 101",
-    "roomId": "R101",
-    "type": "Theory"
-  },
-  {
-    "id": "TT0005",
-    "day": "Monday",
-    "timeSlot": "09:00-10:00",
-    "subject": "Physics",
-    "subjectCode": "PHY101",
-    "teacher": "Test Teacher CSV",
-    "teacherId": "T007",
-    "room": "Room 102",
-    "roomId": "R102",
-    "type": "Theory"
-  },
-  {
-    "id": "TT0006",
-    "day": "Monday",
-    "timeSlot": "10:00-11:00",
-    "subject": "Physics",
-    "subjectCode": "PHY101",
-    "teacher": "Prof. Kumar",
-    "teacherId": "T002",
-    "room": "Room 102",
-    "roomId": "R102",
-    "type": "Theory"
-  },
-  {
-    "id": "TT0007",
-    "day": "Monday",
-    "timeSlot": "11:00-12:00",
-    "subject": "Physics",
-    "subjectCode": "PHY101",
-    "teacher": "Prof. Kumar",
-    "teacherId": "T002",
-    "room": "Room 102",
-    "roomId": "R102",
-    "type": "Theory"
-  },
-  {
-    "id": "TT0008",
-    "day": "Monday",
-    "timeSlot": "09:00-10:00",
-    "subject": "Chemistry",
-    "subjectCode": "CHEM101",
-    "teacher": "Ms. Patel",
-    "teacherId": "T003",
-    "room": "Room 103",
-    "roomId": "R103",
-    "type": "Theory"
-  },
-  {
-    "id": "TT0009",
-    "day": "Monday",
-    "timeSlot": "11:00-12:00",
-    "subject": "Chemistry",
-    "subjectCode": "CHEM101",
-    "teacher": "Ms. Patel",
-    "teacherId": "T003",
-    "room": "Room 103",
-    "roomId": "R103",
-    "type": "Theory"
-  },
-  {
-    "id": "TT0010",
-    "day": "Monday",
-    "timeSlot": "14:00-15:00",
-    "subject": "Chemistry",
-    "subjectCode": "CHEM101",
-    "teacher": "Ms. Patel",
-    "teacherId": "T003",
-    "room": "Room 102",
-    "roomId": "R102",
-    "type": "Theory"
-  },
-  {
-    "id": "TT0011",
-    "day": "Monday",
-    "timeSlot": "10:00-11:00",
-    "subject": "Computer Science",
-    "subjectCode": "CS101",
-    "teacher": "Dr. Verma",
-    "teacherId": "T004",
-    "room": "Room 103",
-    "roomId": "R103",
-    "type": "Theory"
-  },
-  {
-    "id": "TT0012",
-    "day": "Monday",
-    "timeSlot": "11:00-12:00",
-    "subject": "Computer Science",
-    "subjectCode": "CS101",
-    "teacher": "Dr. Verma",
-    "teacherId": "T004",
-    "room": "Test Room 124327",
-    "roomId": "R206",
-    "type": "Theory"
-  },
-  {
-    "id": "TT0013",
-    "day": "Monday",
-    "timeSlot": "15:00-16:00",
-    "subject": "Computer Science",
-    "subjectCode": "CS101",
-    "teacher": "Dr. Verma",
-    "teacherId": "T004",
-    "room": "Room 101",
-    "roomId": "R101",
-    "type": "Theory"
-  },
-  {
-    "id": "TT0014",
-    "day": "Monday",
-    "timeSlot": "09:00-10:00",
-    "subject": "English",
-    "subjectCode": "ENG101",
-    "teacher": "Prof. Singh",
-    "teacherId": "T005",
-    "room": "Test Room 124327",
-    "roomId": "R206",
-    "type": "Theory"
-  },
-  {
-    "id": "TT0015",
-    "day": "Monday",
-    "timeSlot": "10:00-11:00",
-    "subject": "English",
-    "subjectCode": "ENG101",
-    "teacher": "Prof. Singh",
-    "teacherId": "T005",
-    "room": "Test Room 124327",
-    "roomId": "R206",
-    "type": "Theory"
-  },
-  {
-    "id": "TT0016",
-    "day": "Monday",
-    "timeSlot": "14:00-15:00",
-    "subject": "English",
-    "subjectCode": "ENG101",
-    "teacher": "Prof. Singh",
-    "teacherId": "T005",
-    "room": "Room 103",
-    "roomId": "R103",
-    "type": "Theory"
-  },
-  {
-    "id": "TT0017",
-    "day": "Tuesday",
-    "timeSlot": "09:00-10:00",
-    "subject": "Programming",
-    "subjectCode": "CS102",
-    "teacher": "Dr. Verma",
-    "teacherId": "T004",
-    "room": "Computer Lab 1",
-    "roomId": "LAB1",
-    "type": "Practical"
-  },
-  {
-    "id": "TT0018",
-    "day": "Tuesday",
-    "timeSlot": "10:00-11:00",
-    "subject": "Programming",
-    "subjectCode": "CS102",
-    "teacher": "Dr. Verma",
-    "teacherId": "T004",
-    "room": "Computer Lab 1",
-    "roomId": "LAB1",
-    "type": "Practical"
-  },
-  {
-    "id": "TT0019",
-    "day": "Monday",
-    "timeSlot": "14:00-15:00",
-    "subject": "Electronics",
-    "subjectCode": "ECE101",
-    "teacher": "Prof. Kumar",
-    "teacherId": "T002",
-    "room": "Test Room 124327",
-    "roomId": "R206",
-    "type": "Theory"
-  },
-  {
-    "id": "TT0020",
-    "day": "Monday",
-    "timeSlot": "15:00-16:00",
-    "subject": "Electronics",
-    "subjectCode": "ECE101",
-    "teacher": "Prof. Kumar",
-    "teacherId": "T002",
-    "room": "Room 102",
-    "roomId": "R102",
-    "type": "Theory"
-  }
-]
+{
+  "timetable": [
+    {
+      "id": "TT0001",
+      "day": "Monday",
+      "timeSlot": "09:00-09:45",
+      "subject": "Mathematics",
+      "teacher": "Dr. Sharma",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0002",
+      "day": "Monday",
+      "timeSlot": "09:45-10:30",
+      "subject": "Physics",
+      "teacher": "Prof. Kumar",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0003",
+      "day": "Monday",
+      "timeSlot": "10:30-11:15",
+      "subject": "Chemistry",
+      "teacher": "Ms. Patel",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0004",
+      "day": "Monday",
+      "timeSlot": "11:15-12:00",
+      "subject": "Computer Science",
+      "teacher": "Dr. Verma",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0005",
+      "day": "Monday",
+      "timeSlot": "12:30-13:15",
+      "subject": "Programming",
+      "teacher": "Dr. Verma",
+      "type": "Practical"
+    },
+    {
+      "id": "TT0006",
+      "day": "Monday",
+      "timeSlot": "13:15-14:00",
+      "subject": "English",
+      "teacher": "Prof. Singh",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0007",
+      "day": "Monday",
+      "timeSlot": "14:00-14:45",
+      "subject": "Electronics",
+      "teacher": "Prof. Kumar",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0008",
+      "day": "Monday",
+      "timeSlot": "14:45-15:30",
+      "subject": "TEST_Subject_New",
+      "teacher": "TBA",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0009",
+      "day": "Tuesday",
+      "timeSlot": "09:00-09:45",
+      "subject": "Mathematics",
+      "teacher": "Dr. Sharma",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0010",
+      "day": "Tuesday",
+      "timeSlot": "09:45-10:30",
+      "subject": "Physics",
+      "teacher": "Prof. Kumar",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0011",
+      "day": "Tuesday",
+      "timeSlot": "10:30-11:15",
+      "subject": "Chemistry",
+      "teacher": "Ms. Patel",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0012",
+      "day": "Tuesday",
+      "timeSlot": "11:15-12:00",
+      "subject": "Computer Science",
+      "teacher": "Dr. Verma",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0013",
+      "day": "Tuesday",
+      "timeSlot": "12:30-13:15",
+      "subject": "Programming",
+      "teacher": "Dr. Verma",
+      "type": "Practical"
+    },
+    {
+      "id": "TT0014",
+      "day": "Tuesday",
+      "timeSlot": "13:15-14:00",
+      "subject": "English",
+      "teacher": "Prof. Singh",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0015",
+      "day": "Tuesday",
+      "timeSlot": "14:00-14:45",
+      "subject": "Electronics",
+      "teacher": "Prof. Kumar",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0016",
+      "day": "Tuesday",
+      "timeSlot": "14:45-15:30",
+      "subject": "TEST_Subject_New",
+      "teacher": "TBA",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0017",
+      "day": "Wednesday",
+      "timeSlot": "09:00-09:45",
+      "subject": "Mathematics",
+      "teacher": "Dr. Sharma",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0018",
+      "day": "Wednesday",
+      "timeSlot": "09:45-10:30",
+      "subject": "Physics",
+      "teacher": "Prof. Kumar",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0019",
+      "day": "Wednesday",
+      "timeSlot": "10:30-11:15",
+      "subject": "Chemistry",
+      "teacher": "Ms. Patel",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0020",
+      "day": "Wednesday",
+      "timeSlot": "11:15-12:00",
+      "subject": "Computer Science",
+      "teacher": "Dr. Verma",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0021",
+      "day": "Wednesday",
+      "timeSlot": "12:30-13:15",
+      "subject": "Programming",
+      "teacher": "Dr. Verma",
+      "type": "Practical"
+    },
+    {
+      "id": "TT0022",
+      "day": "Wednesday",
+      "timeSlot": "13:15-14:00",
+      "subject": "English",
+      "teacher": "Prof. Singh",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0023",
+      "day": "Wednesday",
+      "timeSlot": "14:00-14:45",
+      "subject": "Electronics",
+      "teacher": "Prof. Kumar",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0024",
+      "day": "Wednesday",
+      "timeSlot": "14:45-15:30",
+      "subject": "TEST_Subject_New",
+      "teacher": "TBA",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0025",
+      "day": "Thursday",
+      "timeSlot": "09:00-09:45",
+      "subject": "Mathematics",
+      "teacher": "Dr. Sharma",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0026",
+      "day": "Thursday",
+      "timeSlot": "09:45-10:30",
+      "subject": "Physics",
+      "teacher": "Prof. Kumar",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0027",
+      "day": "Thursday",
+      "timeSlot": "10:30-11:15",
+      "subject": "Chemistry",
+      "teacher": "Ms. Patel",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0028",
+      "day": "Thursday",
+      "timeSlot": "11:15-12:00",
+      "subject": "Computer Science",
+      "teacher": "Dr. Verma",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0029",
+      "day": "Thursday",
+      "timeSlot": "12:30-13:15",
+      "subject": "Programming",
+      "teacher": "Dr. Verma",
+      "type": "Practical"
+    },
+    {
+      "id": "TT0030",
+      "day": "Thursday",
+      "timeSlot": "13:15-14:00",
+      "subject": "Free Period",
+      "teacher": "-",
+      "type": "Free"
+    },
+    {
+      "id": "TT0031",
+      "day": "Thursday",
+      "timeSlot": "14:00-14:45",
+      "subject": "Free Period",
+      "teacher": "-",
+      "type": "Free"
+    },
+    {
+      "id": "TT0032",
+      "day": "Thursday",
+      "timeSlot": "14:45-15:30",
+      "subject": "Free Period",
+      "teacher": "-",
+      "type": "Free"
+    },
+    {
+      "id": "TT0033",
+      "day": "Friday",
+      "timeSlot": "09:00-09:45",
+      "subject": "Mathematics",
+      "teacher": "Dr. Sharma",
+      "type": "Theory"
+    },
+    {
+      "id": "TT0034",
+      "day": "Friday",
+      "timeSlot": "09:45-10:30",
+      "subject": "Free Period",
+      "teacher": "-",
+      "type": "Free"
+    },
+    {
+      "id": "TT0035",
+      "day": "Friday",
+      "timeSlot": "10:30-11:15",
+      "subject": "Free Period",
+      "teacher": "-",
+      "type": "Free"
+    },
+    {
+      "id": "TT0036",
+      "day": "Friday",
+      "timeSlot": "11:15-12:00",
+      "subject": "Free Period",
+      "teacher": "-",
+      "type": "Free"
+    },
+    {
+      "id": "TT0037",
+      "day": "Friday",
+      "timeSlot": "12:30-13:15",
+      "subject": "Free Period",
+      "teacher": "-",
+      "type": "Free"
+    },
+    {
+      "id": "TT0038",
+      "day": "Friday",
+      "timeSlot": "13:15-14:00",
+      "subject": "Free Period",
+      "teacher": "-",
+      "type": "Free"
+    },
+    {
+      "id": "TT0039",
+      "day": "Friday",
+      "timeSlot": "14:00-14:45",
+      "subject": "Free Period",
+      "teacher": "-",
+      "type": "Free"
+    },
+    {
+      "id": "TT0040",
+      "day": "Friday",
+      "timeSlot": "14:45-15:30",
+      "subject": "Free Period",
+      "teacher": "-",
+      "type": "Free"
+    }
+  ],
+  "days": [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday"
+  ],
+  "slots": [
+    "09:00-09:45",
+    "09:45-10:30",
+    "10:30-11:15",
+    "11:15-12:00",
+    "12:30-13:15",
+    "13:15-14:00",
+    "14:00-14:45",
+    "14:45-15:30"
+  ],
+  "className": "Final Test Class"
+}

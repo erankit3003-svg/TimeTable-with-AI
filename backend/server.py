@@ -13,21 +13,20 @@ from pydantic import BaseModel
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# Data directory
 DATA_DIR = ROOT_DIR.parent / 'data'
 DATA_DIR.mkdir(exist_ok=True)
 
-# Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# JSON file helpers
 def read_json(filename):
     filepath = DATA_DIR / filename
     try:
         with open(filepath, 'r') as f:
             return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
+        if filename == 'config.json':
+            return {}
         return []
 
 def write_json(filename, data):
@@ -35,14 +34,15 @@ def write_json(filename, data):
     with open(filepath, 'w') as f:
         json.dump(data, f, indent=2)
 
-# Initialize data files if they don't exist
 for fname in ['teachers.json', 'rooms.json', 'subjects.json', 'timetable.json', 'conflicts.json']:
     if not (DATA_DIR / fname).exists():
         write_json(fname, [])
+if not (DATA_DIR / 'config.json').exists():
+    write_json('config.json', {})
 
-# Constants
-DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
-TIME_SLOTS = ['09:00-10:00', '10:00-11:00', '11:00-12:00', '14:00-15:00', '15:00-16:00']
+# Default slots used by CSV import for teacher availability
+DEFAULT_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+DEFAULT_SLOTS = ['09:00-10:00', '10:00-11:00', '11:00-12:00', '14:00-15:00', '15:00-16:00']
 
 # Pydantic models
 class TeacherInput(BaseModel):
@@ -63,9 +63,15 @@ class SubjectInput(BaseModel):
     type: str = "Theory"
     requiredSessions: int = 3
 
-# Create app
-app = FastAPI()
+class GenerateConfig(BaseModel):
+    className: str = "Class A"
+    workingDays: int = 5
+    hoursPerDay: float = 6
+    durationMinutes: int = 45
+    startTime: str = "09:00"
+    subjects: List[Dict[str, Any]] = []
 
+app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -91,6 +97,7 @@ async def get_data():
             "rooms": read_json('rooms.json'),
             "subjects": read_json('subjects.json'),
             "timetable": read_json('timetable.json'),
+            "config": read_json('config.json'),
         }
     }
 
@@ -218,129 +225,139 @@ async def delete_subject(subject_id: str):
     return {"success": True, "data": removed}
 
 # ========== Timetable Generation ==========
-def generate_timetable(teachers, rooms, subjects):
-    timetable = []
-    teacher_alloc = {t['id']: {} for t in teachers}
-    room_alloc = {r['id']: {} for r in rooms}
-
-    sorted_subjects = sorted(subjects, key=lambda s: s.get('requiredSessions', 3), reverse=True)
-
-    for subject in sorted_subjects:
-        required = subject.get('requiredSessions', 3)
-        allocated = 0
-        eligible = [t for t in teachers if subject['name'] in (t.get('subjects') or [])]
-        if not eligible:
-            continue
-
-        for day in DAYS:
-            if allocated >= required:
-                break
-            for slot in TIME_SLOTS:
-                if allocated >= required:
-                    break
-                key = f"{day}-{slot}"
-
-                teacher = next((t for t in eligible
-                    if t.get('availability', {}).get(day) and slot in t['availability'][day]
-                    and key not in teacher_alloc.get(t['id'], {})), None)
-                if not teacher:
-                    continue
-
-                prefer_lab = subject.get('type') == 'Practical'
-                room = next((r for r in rooms
-                    if key not in room_alloc.get(r['id'], {})
-                    and (r.get('type') == 'Lab' if prefer_lab else r.get('type') != 'Lab')), None)
-                if not room:
-                    room = next((r for r in rooms if key not in room_alloc.get(r['id'], {})), None)
-                if not room:
-                    continue
-
-                teacher_alloc[teacher['id']][key] = True
-                room_alloc[room['id']][key] = True
-
-                timetable.append({
-                    "id": f"TT{str(len(timetable) + 1).zfill(4)}",
-                    "day": day,
-                    "timeSlot": slot,
-                    "subject": subject['name'],
-                    "subjectCode": subject.get('code', ''),
-                    "teacher": teacher['name'],
-                    "teacherId": teacher['id'],
-                    "room": room['name'],
-                    "roomId": room['id'],
-                    "type": subject.get('type', 'Theory'),
-                })
-                allocated += 1
-
-    return timetable
+def compute_time_slots(hours_per_day, duration_minutes, start_time="09:00"):
+    total_minutes = int(hours_per_day * 60)
+    num_slots = total_minutes // duration_minutes
+    sh, sm = map(int, start_time.split(':'))
+    current = sh * 60 + sm
+    half = num_slots // 2
+    slots = []
+    for i in range(num_slots):
+        if i == half and num_slots > 2:
+            current += 30  # 30-min lunch break
+        s_h, s_m = divmod(current, 60)
+        end = current + duration_minutes
+        e_h, e_m = divmod(end, 60)
+        slots.append(f"{s_h:02d}:{s_m:02d}-{e_h:02d}:{e_m:02d}")
+        current = end
+    return slots
 
 @api_router.post("/generate")
-async def generate():
-    teachers = read_json('teachers.json')
-    rooms = read_json('rooms.json')
-    subjects = read_json('subjects.json')
+async def generate(config: GenerateConfig):
+    ALL_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    days = ALL_DAYS[:config.workingDays]
+    slots = compute_time_slots(config.hoursPerDay, config.durationMinutes, config.startTime)
 
-    timetable = generate_timetable(teachers, rooms, subjects)
-    write_json('timetable.json', timetable)
+    subjects = config.subjects
+    remaining = {s['name']: int(s.get('credits', 1)) for s in subjects}
 
-    conflicts = detect_conflicts(timetable)
+    timetable = []
+    teacher_schedule = {}
+
+    for day in days:
+        day_used = set()
+        for slot in slots:
+            # Sort by remaining credits desc, pick first that fits constraints
+            candidates = sorted(
+                [s for s in subjects
+                 if remaining.get(s['name'], 0) > 0
+                 and s['name'] not in day_used],
+                key=lambda s: remaining[s['name']],
+                reverse=True
+            )
+            # Also filter teacher conflicts (same teacher same slot)
+            chosen = None
+            for c in candidates:
+                t_key = (c.get('teacher', 'TBA'), day, slot)
+                if t_key not in teacher_schedule:
+                    chosen = c
+                    break
+
+            if chosen:
+                timetable.append({
+                    'id': f"TT{len(timetable)+1:04d}",
+                    'day': day,
+                    'timeSlot': slot,
+                    'subject': chosen['name'],
+                    'teacher': chosen.get('teacher', 'TBA'),
+                    'type': chosen.get('type', 'Theory'),
+                })
+                day_used.add(chosen['name'])
+                remaining[chosen['name']] -= 1
+                teacher_schedule[(chosen.get('teacher', 'TBA'), day, slot)] = True
+            else:
+                timetable.append({
+                    'id': f"TT{len(timetable)+1:04d}",
+                    'day': day,
+                    'timeSlot': slot,
+                    'subject': 'Free Period',
+                    'teacher': '-',
+                    'type': 'Free',
+                })
+
+    unmet = {k: v for k, v in remaining.items() if v > 0}
+
+    result = {
+        'timetable': timetable,
+        'days': days,
+        'slots': slots,
+        'className': config.className,
+    }
+
+    write_json('timetable.json', result)
+    write_json('config.json', {
+        'className': config.className,
+        'workingDays': config.workingDays,
+        'hoursPerDay': config.hoursPerDay,
+        'durationMinutes': config.durationMinutes,
+        'startTime': config.startTime,
+        'subjects': config.subjects,
+    })
 
     return {
-        "success": True,
-        "data": timetable,
-        "conflicts": conflicts,
-        "stats": {
-            "totalSessions": len(timetable),
-            "teachers": len(teachers),
-            "rooms": len(rooms),
-            "subjects": len(subjects),
-            "conflictCount": len(conflicts),
-        }
+        'success': True,
+        'data': result,
+        'stats': {
+            'totalSessions': len([t for t in timetable if t['subject'] != 'Free Period']),
+            'totalFree': len([t for t in timetable if t['subject'] == 'Free Period']),
+            'totalSlots': len(timetable),
+            'subjects': len(subjects),
+            'days': len(days),
+            'slotsPerDay': len(slots),
+        },
+        'unmetCredits': unmet,
     }
+
+# ========== Config ==========
+@api_router.get("/config")
+async def get_config():
+    return {"success": True, "data": read_json('config.json')}
 
 # ========== Conflict Detection ==========
 def detect_conflicts(timetable):
     conflicts = []
     teacher_slots = {}
-    room_slots = {}
-
     for entry in timetable:
+        if entry.get('subject') == 'Free Period':
+            continue
         key = f"{entry['day']}-{entry['timeSlot']}"
-
-        tid = entry['teacherId']
-        if tid not in teacher_slots:
-            teacher_slots[tid] = {}
-        if key in teacher_slots[tid]:
+        teacher = entry.get('teacher', '')
+        if not teacher or teacher == '-':
+            continue
+        if teacher not in teacher_slots:
+            teacher_slots[teacher] = {}
+        if key in teacher_slots[teacher]:
             conflicts.append({
-                "type": "Teacher Conflict",
-                "severity": "High",
-                "teacher": entry['teacher'],
-                "teacherId": tid,
-                "day": entry['day'],
-                "timeSlot": entry['timeSlot'],
-                "subjects": [teacher_slots[tid][key]['subject'], entry['subject']],
-                "entryIds": [teacher_slots[tid][key]['id'], entry['id']],
+                'type': 'Teacher Conflict',
+                'severity': 'High',
+                'teacher': teacher,
+                'day': entry['day'],
+                'timeSlot': entry['timeSlot'],
+                'subjects': [teacher_slots[teacher][key]['subject'], entry['subject']],
+                'entryIds': [teacher_slots[teacher][key]['id'], entry['id']],
             })
         else:
-            teacher_slots[tid][key] = entry
-
-        rid = entry['roomId']
-        if rid not in room_slots:
-            room_slots[rid] = {}
-        if key in room_slots[rid]:
-            conflicts.append({
-                "type": "Room Conflict",
-                "severity": "Medium",
-                "room": entry['room'],
-                "roomId": rid,
-                "day": entry['day'],
-                "timeSlot": entry['timeSlot'],
-                "subjects": [room_slots[rid][key]['subject'], entry['subject']],
-                "entryIds": [room_slots[rid][key]['id'], entry['id']],
-            })
-        else:
-            room_slots[rid][key] = entry
-
+            teacher_slots[teacher][key] = entry
     return conflicts
 
 class ConflictBody(BaseModel):
@@ -348,132 +365,33 @@ class ConflictBody(BaseModel):
 
 @api_router.post("/conflict")
 async def check_conflict(body: ConflictBody = ConflictBody()):
-    timetable = body.timetable if body.timetable else read_json('timetable.json')
+    tt_data = read_json('timetable.json')
+    if body.timetable:
+        timetable = body.timetable
+    elif isinstance(tt_data, dict):
+        timetable = tt_data.get('timetable', [])
+    else:
+        timetable = tt_data
     conflicts = detect_conflicts(timetable)
     write_json('conflicts.json', conflicts)
     return {
-        "success": True,
-        "conflicts": conflicts,
-        "count": len(conflicts),
-        "hasConflicts": len(conflicts) > 0,
+        'success': True,
+        'conflicts': conflicts,
+        'count': len(conflicts),
+        'hasConflicts': len(conflicts) > 0,
     }
 
-# ========== Partial Re-Optimization + Impact Minimization ==========
+# ========== Optimize (re-detect) ==========
 @api_router.post("/optimize")
 async def optimize():
-    timetable = read_json('timetable.json')
-    teachers = read_json('teachers.json')
-    rooms = read_json('rooms.json')
-
-    current_conflicts = detect_conflicts(timetable)
-    if not current_conflicts:
-        return {
-            "success": True,
-            "message": "No conflicts to optimize",
-            "originalConflicts": 0,
-            "remainingConflicts": 0,
-            "resolved": 0,
-            "affectedTeachers": 0,
-            "affectedClasses": 0,
-            "changes": [],
-            "timetable": timetable,
-        }
-
-    # Build occupancy maps
-    teacher_occ = {}
-    room_occ = {}
-    for entry in timetable:
-        key = f"{entry['day']}-{entry['timeSlot']}"
-        teacher_occ.setdefault(entry['teacherId'], set()).add(key)
-        room_occ.setdefault(entry['roomId'], set()).add(key)
-
-    changes = []
-    affected_teachers = set()
-    affected_subjects = set()
-
-    for conflict in current_conflicts:
-        entry_id = conflict['entryIds'][1]
-        entry_idx = next((i for i, e in enumerate(timetable) if e['id'] == entry_id), None)
-        if entry_idx is None:
-            continue
-
-        entry = timetable[entry_idx]
-        teacher = next((t for t in teachers if t['id'] == entry['teacherId']), None)
-        if not teacher:
-            continue
-
-        old_key = f"{entry['day']}-{entry['timeSlot']}"
-        if entry['teacherId'] in teacher_occ:
-            teacher_occ[entry['teacherId']].discard(old_key)
-        if entry['roomId'] in room_occ:
-            room_occ[entry['roomId']].discard(old_key)
-
-        best_slot = None
-        best_score = float('inf')
-
-        for day in DAYS:
-            for slot in TIME_SLOTS:
-                key = f"{day}-{slot}"
-                avail = teacher.get('availability', {}).get(day, [])
-                if slot not in avail:
-                    continue
-                if key in teacher_occ.get(entry['teacherId'], set()):
-                    continue
-
-                free_room = next((r for r in rooms if key not in room_occ.get(r['id'], set())), None)
-                if not free_room:
-                    continue
-
-                score = 0
-                if day != entry['day']:
-                    score += 2
-                if free_room['id'] != entry['roomId']:
-                    score += 1
-                score += DAYS.index(day) * 0.1 + TIME_SLOTS.index(slot) * 0.01
-
-                if score < best_score:
-                    best_score = score
-                    best_slot = {"day": day, "timeSlot": slot, "roomId": free_room['id'], "roomName": free_room['name']}
-
-        if best_slot:
-            old_day = entry['day']
-            old_slot_val = entry['timeSlot']
-            old_room = entry['room']
-
-            timetable[entry_idx]['day'] = best_slot['day']
-            timetable[entry_idx]['timeSlot'] = best_slot['timeSlot']
-            timetable[entry_idx]['room'] = best_slot['roomName']
-            timetable[entry_idx]['roomId'] = best_slot['roomId']
-
-            new_key = f"{best_slot['day']}-{best_slot['timeSlot']}"
-            teacher_occ.setdefault(entry['teacherId'], set()).add(new_key)
-            room_occ.setdefault(best_slot['roomId'], set()).add(new_key)
-
-            affected_teachers.add(entry['teacherId'])
-            affected_subjects.add(entry['subject'])
-
-            changes.append({
-                "sessionId": entry['id'],
-                "subject": entry['subject'],
-                "teacher": entry['teacher'],
-                "from": {"day": old_day, "timeSlot": old_slot_val, "room": old_room},
-                "to": {"day": best_slot['day'], "timeSlot": best_slot['timeSlot'], "room": best_slot['roomName']},
-            })
-
-    write_json('timetable.json', timetable)
-    remaining = detect_conflicts(timetable)
-    write_json('conflicts.json', remaining)
-
+    tt_data = read_json('timetable.json')
+    timetable = tt_data.get('timetable', []) if isinstance(tt_data, dict) else tt_data
+    conflicts = detect_conflicts(timetable)
     return {
-        "success": True,
-        "message": f"Optimization complete. {len(changes)} session(s) rescheduled.",
-        "originalConflicts": len(current_conflicts),
-        "remainingConflicts": len(remaining),
-        "resolved": len(current_conflicts) - len(remaining),
-        "affectedTeachers": len(affected_teachers),
-        "affectedClasses": len(affected_subjects),
-        "changes": changes,
-        "timetable": timetable,
+        'success': True,
+        'message': 'No conflicts found' if not conflicts else f'{len(conflicts)} conflict(s) detected',
+        'conflicts': conflicts,
+        'timetable': timetable,
     }
 
 # ========== Timetable & Export ==========
@@ -492,7 +410,6 @@ async def export_timetable():
     )
 
 # ========== CSV Upload ==========
-
 @api_router.post("/upload/teachers")
 async def upload_teachers_csv(file: UploadFile = File(...)):
     try:
@@ -511,8 +428,8 @@ async def upload_teachers_csv(file: UploadFile = File(...)):
             avail_days = [d.strip() for d in row.get('available_days', '').split(';') if d.strip()]
             availability = {}
             for d in avail_days:
-                if d in DAYS:
-                    availability[d] = list(TIME_SLOTS)
+                if d in DEFAULT_DAYS:
+                    availability[d] = list(DEFAULT_SLOTS)
             new_id = f"T{str(len(teachers) + 1).zfill(3)}"
             teachers.append({"id": new_id, "name": name, "subjects": subjects, "availability": availability})
             added += 1
@@ -573,7 +490,6 @@ async def upload_subjects_csv(file: UploadFile = File(...)):
         return {"success": False, "error": str(e)}
 
 # ========== Sample CSV Downloads ==========
-
 @api_router.get("/sample/teachers")
 async def sample_teachers_csv():
     from starlette.responses import Response
@@ -583,11 +499,7 @@ async def sample_teachers_csv():
     writer.writerow(['Dr. Sharma', 'Mathematics;Statistics', 'Monday;Tuesday;Wednesday;Thursday;Friday'])
     writer.writerow(['Prof. Kumar', 'Physics;Electronics', 'Monday;Tuesday;Wednesday;Thursday;Friday'])
     writer.writerow(['Ms. Patel', 'Chemistry;Biology', 'Monday;Tuesday;Wednesday;Thursday;Friday'])
-    return Response(
-        content=output.getvalue(),
-        media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=sample_teachers.csv"}
-    )
+    return Response(content=output.getvalue(), media_type="text/csv", headers={"Content-Disposition": "attachment; filename=sample_teachers.csv"})
 
 @api_router.get("/sample/rooms")
 async def sample_rooms_csv():
@@ -598,11 +510,7 @@ async def sample_rooms_csv():
     writer.writerow(['Room 101', '40', 'Classroom', 'Projector;Whiteboard'])
     writer.writerow(['Room 102', '35', 'Classroom', 'Whiteboard'])
     writer.writerow(['Computer Lab 1', '30', 'Lab', 'Computers;Projector'])
-    return Response(
-        content=output.getvalue(),
-        media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=sample_rooms.csv"}
-    )
+    return Response(content=output.getvalue(), media_type="text/csv", headers={"Content-Disposition": "attachment; filename=sample_rooms.csv"})
 
 @api_router.get("/sample/subjects")
 async def sample_subjects_csv():
@@ -613,10 +521,6 @@ async def sample_subjects_csv():
     writer.writerow(['Mathematics', 'MATH101', '4', 'Theory', '4'])
     writer.writerow(['Physics', 'PHY101', '4', 'Theory', '3'])
     writer.writerow(['Programming', 'CS102', '4', 'Practical', '2'])
-    return Response(
-        content=output.getvalue(),
-        media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=sample_subjects.csv"}
-    )
+    return Response(content=output.getvalue(), media_type="text/csv", headers={"Content-Disposition": "attachment; filename=sample_subjects.csv"})
 
 app.include_router(api_router)

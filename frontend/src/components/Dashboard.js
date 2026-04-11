@@ -191,12 +191,8 @@ const Dashboard = ({ data, onGenerate, onRefresh, loading, conflicts, onDetectCo
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             Detect Conflicts
           </button>
-          <button data-testid="generate-timetable-btn" className="btn btn-primary" onClick={onGenerate} disabled={loading}>
-            {loading ? (
-              <><span className="spinner"></span> Generating...</>
-            ) : (
-              <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generate Timetable</>
-            )}
+          <button data-testid="generate-timetable-btn" className="btn btn-primary" onClick={onGenerate}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Go to Generate
           </button>
         </div>
       </div>

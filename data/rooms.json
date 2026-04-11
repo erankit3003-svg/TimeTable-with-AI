@@ -58,5 +58,14 @@
       "Lab Equipment",
       "Whiteboard"
     ]
+  },
+  {
+    "id": "R206",
+    "name": "TEST_Room_101",
+    "capacity": 40,
+    "type": "Classroom",
+    "facilities": [
+      "Projector"
+    ]
   }
 ]

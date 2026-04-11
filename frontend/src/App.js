@@ -4,23 +4,24 @@ import './App.css';
 import Dashboard from './components/Dashboard';
 import TimetableGrid from './components/TimetableGrid';
 import AddForms from './components/AddForms';
+import ConfigForm from './components/ConfigForm';
 import Flowchart from './components/Flowchart';
 import { Toaster, toast } from './components/Toast';
 
 const API_URL = (process.env.REACT_APP_BACKEND_URL || '') + '/api';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('generate');
   const [data, setData] = useState({
     teachers: [],
     rooms: [],
     subjects: [],
-    timetable: []
+    timetable: {},
+    config: {},
   });
   const [loading, setLoading] = useState(false);
-  const [optimizing, setOptimizing] = useState(false);
   const [conflicts, setConflicts] = useState([]);
-  const [optimizeResult, setOptimizeResult] = useState(null);
+  const [generatedResult, setGeneratedResult] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -30,7 +31,12 @@ function App() {
     try {
       const response = await axios.get(`${API_URL}/data`);
       if (response.data.success) {
-        setData(response.data.data);
+        const d = response.data.data;
+        setData(d);
+        // Restore generated result from saved timetable
+        if (d.timetable && d.timetable.timetable && d.timetable.days) {
+          setGeneratedResult(d.timetable);
+        }
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -38,18 +44,25 @@ function App() {
     }
   };
 
-  const generateTimetable = async () => {
+  const generateTimetable = async (config) => {
     setLoading(true);
-    setOptimizeResult(null);
     try {
-      const response = await axios.post(`${API_URL}/generate`);
+      const response = await axios.post(`${API_URL}/generate`, config);
       if (response.data.success) {
-        setData(prev => ({ ...prev, timetable: response.data.data }));
-        setConflicts(response.data.conflicts || []);
-        toast.success(`Timetable generated! ${response.data.stats.totalSessions} sessions created`);
-        if (response.data.conflicts?.length > 0) {
-          toast.warning(`${response.data.conflicts.length} conflict(s) detected`);
+        const result = response.data.data;
+        setGeneratedResult(result);
+        setData(prev => ({ ...prev, timetable: result, config: config }));
+        setConflicts([]);
+
+        const stats = response.data.stats;
+        toast.success(`Timetable generated! ${stats.totalSessions} sessions, ${stats.totalFree} free periods`);
+
+        if (response.data.unmetCredits && Object.keys(response.data.unmetCredits).length > 0) {
+          const unmet = response.data.unmetCredits;
+          const names = Object.entries(unmet).map(([k, v]) => `${k} (${v} short)`).join(', ');
+          toast.warning(`Unmet credits: ${names}`);
         }
+
         setActiveTab('timetable');
       }
     } catch (error) {
@@ -59,11 +72,9 @@ function App() {
     setLoading(false);
   };
 
-  const detectConflicts = async (timetable = null) => {
+  const detectConflicts = async () => {
     try {
-      const response = await axios.post(`${API_URL}/conflict`, {
-        timetable: timetable || data.timetable
-      });
+      const response = await axios.post(`${API_URL}/conflict`);
       if (response.data.success) {
         setConflicts(response.data.conflicts);
         if (response.data.count > 0) {
@@ -73,50 +84,24 @@ function App() {
         }
       }
     } catch (error) {
-      console.error('Error detecting conflicts:', error);
       toast.error('Failed to detect conflicts');
     }
   };
 
-  const optimizeTimetable = async () => {
-    setOptimizing(true);
-    setOptimizeResult(null);
-    try {
-      const response = await axios.post(`${API_URL}/optimize`);
-      if (response.data.success) {
-        setOptimizeResult(response.data);
-        if (response.data.timetable) {
-          setData(prev => ({ ...prev, timetable: response.data.timetable }));
-        }
-        // Re-detect conflicts after optimization
-        const conflictRes = await axios.post(`${API_URL}/conflict`);
-        if (conflictRes.data.success) {
-          setConflicts(conflictRes.data.conflicts);
-        }
-        if (response.data.changes?.length > 0) {
-          toast.success(`${response.data.changes.length} session(s) rescheduled`);
-        } else {
-          toast.info(response.data.message);
-        }
-      }
-    } catch (error) {
-      console.error('Error optimizing:', error);
-      toast.error('Optimization failed');
-    }
-    setOptimizing(false);
-  };
-
   const exportTimetable = () => {
-    const dataStr = JSON.stringify(data.timetable, null, 2);
+    const exportData = generatedResult || data.timetable;
+    const dataStr = JSON.stringify(exportData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'timetable.json';
+    link.download = `timetable_${(generatedResult?.className || 'export').replace(/\s+/g, '_')}.json`;
     link.click();
     URL.revokeObjectURL(url);
     toast.success('Timetable exported');
   };
+
+  const sessionCount = generatedResult?.timetable?.filter(t => t.subject !== 'Free Period').length || 0;
 
   return (
     <div className="app-root">
@@ -146,15 +131,11 @@ function App() {
               <span className="stat-lbl">Teachers</span>
             </div>
             <div className="stat-pill">
-              <span className="stat-num" data-testid="rooms-count">{data.rooms.length}</span>
-              <span className="stat-lbl">Rooms</span>
-            </div>
-            <div className="stat-pill">
               <span className="stat-num" data-testid="subjects-count">{data.subjects.length}</span>
               <span className="stat-lbl">Subjects</span>
             </div>
             <div className="stat-pill">
-              <span className="stat-num" data-testid="sessions-count">{data.timetable.length}</span>
+              <span className="stat-num" data-testid="sessions-count">{sessionCount}</span>
               <span className="stat-lbl">Sessions</span>
             </div>
           </div>
@@ -164,17 +145,20 @@ function App() {
       {/* Navigation */}
       <nav className="app-nav">
         <div className="nav-inner">
-          {['dashboard', 'timetable', 'add-data', 'flowchart'].map(tab => (
+          {[
+            { key: 'generate', label: 'Generate' },
+            { key: 'timetable', label: 'Timetable View' },
+            { key: 'dashboard', label: 'Data Manager' },
+            { key: 'add-data', label: 'Add Data' },
+            { key: 'flowchart', label: 'Algorithm Flow' },
+          ].map(tab => (
             <button
-              key={tab}
-              data-testid={`${tab}-tab`}
-              className={`nav-btn ${activeTab === tab ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab)}
+              key={tab.key}
+              data-testid={`${tab.key}-tab`}
+              className={`nav-btn ${activeTab === tab.key ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab.key)}
             >
-              {tab === 'dashboard' && 'Dashboard'}
-              {tab === 'timetable' && 'Timetable View'}
-              {tab === 'add-data' && 'Add Data'}
-              {tab === 'flowchart' && 'Algorithm Flow'}
+              {tab.label}
             </button>
           ))}
         </div>
@@ -182,26 +166,31 @@ function App() {
 
       {/* Main Content */}
       <main className="app-main">
+        {activeTab === 'generate' && (
+          <ConfigForm
+            onGenerate={generateTimetable}
+            loading={loading}
+            data={data}
+            savedConfig={data.config}
+          />
+        )}
+        {activeTab === 'timetable' && (
+          <TimetableGrid
+            result={generatedResult}
+            conflicts={conflicts}
+            onExport={exportTimetable}
+            onDetectConflicts={detectConflicts}
+          />
+        )}
         {activeTab === 'dashboard' && (
           <Dashboard
             data={data}
-            onGenerate={generateTimetable}
+            onGenerate={() => setActiveTab('generate')}
             onRefresh={fetchData}
             loading={loading}
             conflicts={conflicts}
             onDetectConflicts={detectConflicts}
             apiUrl={API_URL}
-          />
-        )}
-        {activeTab === 'timetable' && (
-          <TimetableGrid
-            timetable={data.timetable}
-            conflicts={conflicts}
-            onExport={exportTimetable}
-            onDetectConflicts={() => detectConflicts()}
-            onOptimize={optimizeTimetable}
-            optimizing={optimizing}
-            optimizeResult={optimizeResult}
           />
         )}
         {activeTab === 'add-data' && (
